@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>자산운용 포트폴리오 대시보드 v2</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+  :root {
+    --primary: #0B2545;
+    --primary-soft: #13315C;
+    --accent: #BE9B30;
+    --bg: #F4F6FA;
+    --surface: #FFFFFF;
+    --text: #1F2937;
+    --text-soft: #64748B;
+    --border: #E2E8F0;
+    --positive: #047857;
+    --negative: #B91C1C;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    padding: 24px;
+    font-size: 14px;
+  }
+  .container { max-width: 1480px; margin: 0 auto; }
+  header.dash-header {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-soft) 100%);
+    color: #fff;
+    padding: 24px 28px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 16px rgba(11, 37, 69, 0.12);
+    margin-bottom: 20px;
+  }
+  .dash-header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  .dash-header .subtitle { font-size: 13px; opacity: 0.85; margin-top: 4px; font-weight: 400; }
+  .month-selector { display: flex; align-items: center; gap: 12px; }
+  .month-selector label { font-size: 13px; opacity: 0.85; }
+  .month-selector select {
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .month-selector select option { background: var(--primary); color: #fff; }
+  
+  .kpi-row {
+    display: grid;
+    grid-template-columns: 1.4fr repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .kpi-card {
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 18px 20px;
+    border: 1px solid var(--border);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  }
+  .kpi-card.primary {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-soft) 100%);
+    color: #fff;
+    border: none;
+  }
+  .kpi-label { font-size: 12px; color: var(--text-soft); letter-spacing: -0.2px; font-weight: 500; }
+  .kpi-card.primary .kpi-label { color: rgba(255,255,255,0.85); }
+  .kpi-value { font-size: 24px; font-weight: 700; margin-top: 6px; color: var(--text); letter-spacing: -0.5px; }
+  .kpi-card.primary .kpi-value { color: #fff; font-size: 28px; }
+  .kpi-sub { font-size: 11px; color: var(--text-soft); margin-top: 4px; }
+  .kpi-card.primary .kpi-sub { color: rgba(255,255,255,0.75); }
+  .kpi-mom {
+    display: inline-block; font-size: 11px; padding: 2px 8px;
+    border-radius: 10px; margin-top: 6px; font-weight: 600;
+  }
+  .kpi-mom.up { background: rgba(4,120,87,0.12); color: var(--positive); }
+  .kpi-mom.down { background: rgba(185,28,28,0.12); color: var(--negative); }
+  .kpi-mom.flat { background: rgba(100,116,139,0.12); color: var(--text-soft); }
+  .kpi-card.primary .kpi-mom { background: rgba(255,255,255,0.18); color: #fff; }
+  
+  .panel-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;
+  }
+  .panel {
+    background: var(--surface);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    padding: 20px 22px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  }
+  .panel-title {
+    font-size: 14px; font-weight: 700; color: var(--primary);
+    letter-spacing: -0.3px; margin-bottom: 4px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .panel-subtitle { font-size: 11.5px; color: var(--text-soft); margin-bottom: 16px; }
+  .chart-wrap { position: relative; height: 280px; }
+  
+  .donut-area { display: grid; grid-template-columns: 1.1fr 1fr; gap: 16px; align-items: center; }
+  .donut-area .chart-wrap { height: 260px; }
+  .legend-list { font-size: 12px; }
+  .legend-item {
+    display: flex; align-items: center; padding: 5px 0;
+    border-bottom: 1px dashed var(--border); gap: 8px;
+  }
+  .legend-item:last-child { border-bottom: none; }
+  .legend-swatch { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+  .legend-name { flex: 1; color: var(--text); font-size: 12px; }
+  .legend-pct { color: var(--text-soft); font-size: 11px; font-variant-numeric: tabular-nums; min-width: 50px; text-align: right; font-weight: 500; }
+  .legend-amt { color: var(--text); font-size: 11px; font-variant-numeric: tabular-nums; min-width: 70px; text-align: right; font-weight: 600; }
+  
+  /* Treemap improvements */
+  .treemap-wrap { width: 100%; height: 620px; position: relative; }
+  .tm-parent-bg {
+    fill: none;
+    stroke: rgba(255,255,255,0.3);
+    stroke-width: 1px;
+  }
+  .tm-parent-header {
+    fill: rgba(0,0,0,0.25);
+  }
+  .tm-parent-label {
+    fill: #fff;
+    font-family: 'Pretendard', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    pointer-events: none;
+  }
+  .tm-parent-pct {
+    fill: rgba(255,255,255,0.9);
+    font-family: 'Pretendard', sans-serif;
+    font-weight: 500;
+    font-size: 11.5px;
+    pointer-events: none;
+  }
+  .tm-child {
+    stroke: rgba(255,255,255,0.85);
+    stroke-width: 1.5px;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .tm-child:hover { opacity: 0.85; }
+  .tm-child-label {
+    fill: #fff;
+    font-family: 'Pretendard', sans-serif;
+    font-weight: 600;
+    pointer-events: none;
+  }
+  .tm-child-sublabel {
+    fill: rgba(255,255,255,0.92);
+    font-family: 'Pretendard', sans-serif;
+    pointer-events: none;
+  }
+  .treemap-tooltip {
+    position: absolute;
+    background: rgba(11, 37, 69, 0.96);
+    color: #fff;
+    padding: 9px 13px;
+    border-radius: 6px;
+    font-size: 12px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.18);
+    z-index: 10;
+    white-space: nowrap;
+  }
+  .tm-tiny-list {
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: #F8FAFC;
+    border-radius: 6px;
+    font-size: 11.5px;
+    color: var(--text-soft);
+  }
+  .tm-tiny-item { display: inline-block; margin-right: 14px; }
+  .tm-tiny-item .swatch { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
+  
+  .bar-wrap { position: relative; height: 320px; }
+  
+  .table-section { background: var(--surface); border-radius: 10px; border: 1px solid var(--border); padding: 20px 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); margin-bottom: 20px; }
+  .table-controls {
+    display: flex; gap: 16px; align-items: center; margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .search-input {
+    flex: 0 0 240px;
+    padding: 7px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-family: inherit;
+  }
+  .search-input:focus { outline: none; border-color: var(--primary); }
+  .table-filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .filter-chip {
+    padding: 6px 14px;
+    border-radius: 16px;
+    background: #F1F5F9;
+    color: var(--text-soft);
+    font-size: 12px;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    transition: all 0.15s;
+    font-weight: 500;
+    user-select: none;
+  }
+  .filter-chip:hover { background: #E2E8F0; }
+  .filter-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+  
+  .view-tabs {
+    display: inline-flex;
+    background: #F1F5F9;
+    padding: 3px;
+    border-radius: 8px;
+  }
+  .view-tab {
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    color: var(--text-soft);
+    border: none;
+    background: transparent;
+    font-weight: 500;
+    user-select: none;
+  }
+  .view-tab.active { background: var(--surface); color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.08); font-weight: 600; }
+  
+  /* Plain table */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .data-table thead th {
+    background: #F8FAFC;
+    color: var(--primary);
+    font-weight: 700;
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 2px solid var(--border);
+    font-size: 12px;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .data-table thead th .sort-indicator {
+    display: inline-block;
+    margin-left: 4px;
+    color: var(--text-soft);
+    font-size: 10px;
+  }
+  .data-table thead th.sorted-asc .sort-indicator::before { content: "▲"; color: var(--primary); }
+  .data-table thead th.sorted-desc .sort-indicator::before { content: "▼"; color: var(--primary); }
+  .data-table thead th:not(.sorted-asc):not(.sorted-desc) .sort-indicator::before { content: "↕"; }
+  .data-table tbody td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #F1F5F9;
+  }
+  .data-table tbody tr:hover { background: #F8FAFC; }
+  .data-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .data-table .cat-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .table-summary {
+    margin-top: 10px;
+    font-size: 11.5px;
+    color: var(--text-soft);
+    text-align: right;
+  }
+  
+  .trend-empty {
+    text-align: center; padding: 40px 20px; color: var(--text-soft); font-size: 13px;
+  }
+  .trend-empty .empty-icon { font-size: 32px; margin-bottom: 12px; opacity: 0.4; }
+  
+  footer { text-align: center; color: var(--text-soft); font-size: 11px; padding: 20px 0; }
+  
+  @media (max-width: 1100px) {
+    .kpi-row { grid-template-columns: repeat(2, 1fr); }
+    .kpi-card.primary { grid-column: 1 / -1; }
+    .panel-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header class="dash-header">
+    <div>
+      <h1>자산운용 포트폴리오 대시보드</h1>
+      <div class="subtitle" id="periodText">CY 26.03 末 기준 · 단위: 억원, %</div>
+    </div>
+    <div class="month-selector">
+      <label for="monthSelect">기준월</label>
+      <select id="monthSelect"></select>
+    </div>
+  </header>
+
+  <div class="kpi-row" id="kpiRow"></div>
+
+  <div class="panel-grid">
+    <div class="panel">
+      <div class="panel-title">
+        <span>자산군별 구성</span>
+        <span style="font-size:11px;color:var(--text-soft);font-weight:500;">자산분류 기준</span>
+      </div>
+      <div class="panel-subtitle">대분류 7개 · 운용자산 총계 대비 비중</div>
+      <div class="donut-area">
+        <div class="chart-wrap"><canvas id="assetDonut"></canvas></div>
+        <div class="legend-list" id="assetLegend"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">
+        <span>회계분류별 구성</span>
+        <span style="font-size:11px;color:var(--text-soft);font-weight:500;">K-IFRS 기준</span>
+      </div>
+      <div class="panel-subtitle">FVPL · FVOCI · AC/지분법 · 기타</div>
+      <div class="donut-area">
+        <div class="chart-wrap"><canvas id="acctDonut"></canvas></div>
+        <div class="legend-list" id="acctLegend"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-bottom: 20px;">
+    <div class="panel-title">
+      <span>세부 분류 트리맵 (대분류 → 세부분류)</span>
+      <div class="view-tabs" id="treemapTabs">
+        <button class="view-tab active" data-view="asset">자산군 기준</button>
+        <button class="view-tab" data-view="acct">회계분류 기준</button>
+      </div>
+    </div>
+    <div class="panel-subtitle">상단 헤더는 대분류명, 내부 블록은 세부분류 · 박스 면적은 잔액에 비례 · hover 시 상세표시</div>
+    <div class="treemap-wrap" id="treemap"></div>
+    <div class="treemap-tooltip" id="treemapTooltip"></div>
+    <div class="tm-tiny-list" id="treemapTiny" style="display:none;"></div>
+  </div>
+
+  <div class="panel-grid">
+    <div class="panel">
+      <div class="panel-title"><span>자산군별 비중 (수평 바)</span></div>
+      <div class="panel-subtitle">비중 순으로 정렬</div>
+      <div class="bar-wrap"><canvas id="assetBar"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">
+        <span>월별 추이</span>
+        <span style="font-size:11px;color:var(--text-soft);font-weight:500;" id="trendCount"></span>
+      </div>
+      <div class="panel-subtitle">자산군별 잔액 추이 (MoM/YoY)</div>
+      <div class="bar-wrap" id="trendArea"></div>
+    </div>
+  </div>
+
+  <div class="table-section">
+    <div class="panel-title" style="margin-bottom:12px;">
+      <span>상세 포트폴리오 명세</span>
+      <div class="view-tabs" id="tableViewTabs">
+        <button class="view-tab active" data-tableview="asset">자산군 기준</button>
+        <button class="view-tab" data-tableview="acct">회계분류 기준</button>
+      </div>
+    </div>
+    <div class="panel-subtitle" style="margin-bottom:14px;">대분류 칩 클릭으로 필터, 검색창 입력으로 조회, 컬럼 헤더 클릭으로 정렬</div>
+    <div class="table-controls">
+      <input type="text" class="search-input" id="searchInput" placeholder="🔍 분류명·세부분류·비고 검색...">
+    </div>
+    <div class="table-filter-bar" id="filterBar"></div>
+    <div id="dataTable"></div>
+    <div class="table-summary" id="tableSummary"></div>
+  </div>
+
+  <footer>© 자산운용실 투자심사팀 · 본 자료는 보고·검토 목적으로 작성되었음</footer>
+</div>
+
+<script>
+const PORTFOLIO = {"months": ["202603"], "data": {"202603": {"asset_class": {"total": 183698.40856486998, "categories": [{"name": "주 식", "amount": 5943.656067729999, "weight": 0.03235551202737338, "children": [{"name": "직접운용", "amount": 1380.0760254, "weight": 0.007512727171572907, "note": null}, {"name": "전략주식", "amount": 2817.8214742, "weight": 0.015339389688860228, "note": "전략적 투자 목적"}, {"name": "수익증권", "amount": 168.49987270000003, "weight": 0.0009172636497854969, "note": null}, {"name": "비상장주식", "amount": 1430.87533075, "weight": 0.00778926361925836, "note": null}, {"name": "해외주식", "amount": 146.38336468, "weight": 0.0007968678978963892, "note": null}]}, {"name": "국 내 채 권", "amount": 83393.64515776, "weight": 0.4539704279926352, "children": [{"name": "국공채", "amount": 44589.2740025, "weight": 0.24273086713624986, "note": null}, {"name": "특수채", "amount": 20341.678642, "weight": 0.11073410380045116, "note": null}, {"name": "금융채", "amount": 1687.6419, "weight": 0.009187025152719479, "note": null}, {"name": "회사채", "amount": 8148.8673499999995, "weight": 0.04436003236861121, "note": null}, {"name": "신종/CP", "amount": 6392.829699999999, "weight": 0.034800680909233245, "note": null}, {"name": "수익증권", "amount": 417.67741326, "weight": 0.0022737127475576592, "note": null}, {"name": "파생결합", "amount": 445.2479, "weight": 0.0024237983523018288, "note": null}, {"name": "구조화예금", "amount": 1370.4282500000002, "weight": 0.007460207525510797, "note": null}]}, {"name": "해 외 채 권", "amount": 16455.67538982, "weight": 0.089579847307218, "children": [{"name": "직접운용", "amount": 13689.33450216, "weight": 0.07452070276006688, "note": null}, {"name": "파생결합", "amount": 1137.32187655, "weight": 0.006191245125285743, "note": null}, {"name": "수익증권", "amount": 281.11384131, "weight": 0.0015303009073741071, "note": null}, {"name": "구조화예금", "amount": 1347.9051697999998, "weight": 0.007337598514491267, "note": null}]}, {"name": "대체투자 - 간접운용", "amount": 38201.74739029, "weight": 0.20795905467411657, "children": [{"name": "인프라", "amount": 29338.97577157, "weight": 0.15971273785537143, "note": null}, {"name": "부동산", "amount": 3009.8920757899996, "weight": 0.016384965440389795, "note": null}, {"name": "상품/구조화", "amount": 869.5677331399999, "weight": 0.004733670476153999, "note": null}, {"name": "사모투자", "amount": 4983.31180979, "weight": 0.027127680902201325, "note": null}]}, {"name": "대체투자 - 직접대출", "amount": 24283.277888399996, "weight": 0.13219100850198584, "children": [{"name": "인프라", "amount": 11525.525724, "weight": 0.06274156544981692, "note": null}, {"name": "부동산", "amount": 12609.99634218, "weight": 0.06864510389989031, "note": null}, {"name": "사모투자", "amount": 235.91220984, "weight": 0.0012842365466475536, "note": null}, {"name": "충당금", "amount": -88.15638762, "weight": -0.0004798973943689287, "note": null}]}, {"name": "개인대출", "amount": 3334.6831263099994, "weight": 0.018153032202956797, "children": [{"name": "부동산", "amount": 3292.5214115399995, "weight": 0.017923516252876526, "note": null}, {"name": "신용", "amount": 56.44964791, "weight": 0.0003072952474167231, "note": null}, {"name": "충당금", "amount": -14.28793314, "weight": -7.777929733645166e-05, "note": null}]}, {"name": "기 타", "amount": 12085.72354456, "weight": 0.06579111729371423, "children": [{"name": "단기자금", "amount": 8551.10131297, "weight": 0.046549675524000654, "note": null}, {"name": "부동산", "amount": 3534.62223159, "weight": 0.01924144176971358, "note": null}]}]}, "accounting": {"total": 183698.40856487004, "categories": [{"name": "FVPL", "amount": 41554.56818028, "weight": 0.2262108229729475, "children": [{"name": "채 권", "amount": 1581.36172557, "weight": 0.008608467204067086, "details": [{"name": "국내채권", "amount": 362.8306, "weight": 0.001975142859617493}, {"name": "해외채권", "amount": 0.0, "weight": 0}, {"name": "구조화상품", "amount": 519.7398710000001, "weight": 0.0028293106895178276}, {"name": "국내채권형 펀드", "amount": 417.67741326, "weight": 0.0022737127475576584}, {"name": "해외채권형 펀드", "amount": 281.11384131, "weight": 0.0015303009073741067}, {"name": "국채선물", "amount": 0.0, "weight": 0}]}, {"name": "주 식", "amount": 1954.1566924200001, "weight": 0.010637853140300463, "details": [{"name": "상장 주식", "amount": 1380.0760254, "weight": 0.007512727171572905}, {"name": "비상장 주식", "amount": 259.19742964, "weight": 0.0014109944210456713}, {"name": "해외주식", "amount": 89.34904479000001, "weight": 0.0004863898685243529}, {"name": "주식형 펀드", "amount": 225.53419259000003, "weight": 0.0012277416791575328}]}, {"name": "대 체 투 자", "amount": 38019.04976229, "weight": 0.20696450262857996, "details": [{"name": "인프라 금융", "amount": 29320.203545570002, "weight": 0.1596105473892337}, {"name": "부동산 금융", "amount": 2845.9666737899997, "weight": 0.015492603860990956}, {"name": "상품/구조화/사모", "amount": 5852.879542930001, "weight": 0.03186135137835532}]}]}, {"name": "FVOCI", "amount": 116322.05904329, "weight": 0.6332230091270106, "children": [{"name": "채 권", "amount": 98267.95882201001, "weight": 0.5349418080957861, "details": [{"name": "국내채권", "amount": 80797.46099450001, "weight": 0.4398375665076474}, {"name": "해외채권(직접)", "amount": 13689.33450216, "weight": 0.07452070276006685}, {"name": "해외채권(간접)", "amount": 0.0, "weight": 0}, {"name": "구조화상품", "amount": 3781.16332535, "weight": 0.0205835388280718}, {"name": "채권선도", "amount": 0.0, "weight": 0}]}, {"name": "주 식", "amount": 2840.70424496, "weight": 0.015463956749286984, "details": [{"name": "상장 주식", "amount": 2817.8214742, "weight": 0.015339389688860222}, {"name": "비상장 주식", "amount": 22.88277076, "weight": 0.00012456706042676102}]}, {"name": "대 체 투 자", "amount": 15213.39597632, "weight": 0.08281724428193749, "details": [{"name": "인프라 금융", "amount": 10056.47605032, "weight": 0.05474449195769011}, {"name": "부동산 금융", "amount": 5156.919926, "weight": 0.028072752324247375}, {"name": "상품/구조화/사모", "amount": 0.0, "weight": 0}]}]}, {"name": "AC/ 지분법", "amount": 13736.05779674, "weight": 0.0747750506063276, "children": [{"name": "지분법 주식/출자금", "amount": 1167.56735635, "weight": 0.006355892603923637, "details": []}, {"name": "대체투자", "amount": 9233.80731408, "weight": 0.05026612579944717, "details": [{"name": "인프라 금융", "amount": 1469.04967368, "weight": 0.007997073492126795}, {"name": "부동산금융", "amount": 7617.001818180001, "weight": 0.04146471315504175}, {"name": "기타금융", "amount": 235.91220984, "weight": 0.0012842365466475532}, {"name": "충당금", "amount": -88.15638762, "weight": -0.0004798973943689286}]}, {"name": "개인대출", "amount": 3334.6831263099994, "weight": 0.01815303220295679, "details": [{"name": "부동산담보", "amount": 3292.5214115399995, "weight": 0.01792351625287652}, {"name": "그 외 대출", "amount": 56.44964791, "weight": 0.000307295247416723}, {"name": "충당금", "amount": -14.28793314, "weight": -7.777929733645163e-05}]}]}, {"name": "기 타", "amount": 12085.72354456, "weight": 0.06579111729371422, "children": [{"name": "단기자금 + 부동산", "amount": 12085.72354456, "weight": 0.06579111729371422, "details": [{"name": "단기자금", "amount": 8551.10131297, "weight": 0.04654967552400064}, {"name": "부동산", "amount": 3534.62223159, "weight": 0.019241441769713572}]}]}]}}}, "latest": "202603"};
+
+const ASSET_COLORS = {
+  "주 식": "#1D4ED8",
+  "국 내 채 권": "#0F766E",
+  "해 외 채 권": "#0891B2",
+  "대체투자 - 간접운용": "#B45309",
+  "대체투자 - 직접대출": "#D97706",
+  "개인대출": "#7C2D12",
+  "기 타": "#475569"
+};
+const ACCT_COLORS = {
+  "FVPL": "#1D4ED8",
+  "FVOCI": "#047857",
+  "AC/ 지분법": "#B45309",
+  "AC/지분법": "#B45309",
+  "기 타": "#475569"
+};
+
+// Generate lighter shade for children
+function shadeColor(hex, percent) {
+  // percent positive = lighter
+  let R = parseInt(hex.substring(1,3), 16);
+  let G = parseInt(hex.substring(3,5), 16);
+  let B = parseInt(hex.substring(5,7), 16);
+  R = Math.min(255, Math.round(R + (255 - R) * percent));
+  G = Math.min(255, Math.round(G + (255 - G) * percent));
+  B = Math.min(255, Math.round(B + (255 - B) * percent));
+  return "#" + R.toString(16).padStart(2,'0') + G.toString(16).padStart(2,'0') + B.toString(16).padStart(2,'0');
+}
+
+function fmt(n, digits=0) {
+  if (n === null || n === undefined || isNaN(n)) return "-";
+  return Number(n).toLocaleString("ko-KR", { maximumFractionDigits: digits, minimumFractionDigits: digits });
+}
+function fmtPct(n, digits=2) {
+  if (n === null || n === undefined || isNaN(n)) return "-";
+  return (n * 100).toFixed(digits) + "%";
+}
+function fmtPeriod(yyyymm) {
+  return "CY " + yyyymm.substring(2,4) + "." + yyyymm.substring(4,6) + " 末";
+}
+function getColor(name, type) {
+  const palette = type === "asset" ? ASSET_COLORS : ACCT_COLORS;
+  return palette[name] || "#94A3B8";
+}
+
+let currentMonth = PORTFOLIO.latest;
+let treemapView = "asset";
+let tableView = "asset";
+let activeFilter = null;
+let searchQuery = "";
+let sortCol = null;
+let sortDir = "desc";
+
+function initMonthSelector() {
+  const sel = document.getElementById("monthSelect");
+  PORTFOLIO.months.slice().reverse().forEach(m => {
+    const opt = document.createElement("option");
+    opt.value = m;
+    opt.textContent = fmtPeriod(m);
+    if (m === currentMonth) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  sel.addEventListener("change", e => {
+    currentMonth = e.target.value;
+    document.getElementById("periodText").textContent = fmtPeriod(currentMonth) + " 기준 · 단위: 억원, %";
+    renderAll();
+  });
+}
+
+function getPrevMonth(yyyymm) {
+  const idx = PORTFOLIO.months.indexOf(yyyymm);
+  return idx > 0 ? PORTFOLIO.months[idx-1] : null;
+}
+
+function calcMoM(catName, type) {
+  const prev = getPrevMonth(currentMonth);
+  if (!prev) return null;
+  const cur = PORTFOLIO.data[currentMonth][type === "asset" ? "asset_class" : "accounting"];
+  const pdata = PORTFOLIO.data[prev][type === "asset" ? "asset_class" : "accounting"];
+  if (!cur || !pdata) return null;
+  if (catName === "_TOTAL_") {
+    return ((cur.total - pdata.total) / pdata.total);
+  }
+  const curCat = cur.categories.find(c => c.name === catName);
+  const prevCat = pdata.categories.find(c => c.name === catName);
+  if (!curCat || !prevCat || prevCat.amount === 0) return null;
+  return (curCat.amount - prevCat.amount) / prevCat.amount;
+}
+
+function renderKPI() {
+  const data = PORTFOLIO.data[currentMonth];
+  const asset = data.asset_class;
+  const row = document.getElementById("kpiRow");
+  row.innerHTML = "";
+
+  const momTotal = calcMoM("_TOTAL_", "asset");
+  const momHtml = momTotal !== null
+    ? `<span class="kpi-mom ${momTotal>0?'up':momTotal<0?'down':'flat'}">${momTotal>0?'▲':momTotal<0?'▼':'■'} ${(Math.abs(momTotal)*100).toFixed(2)}% MoM</span>`
+    : `<span class="kpi-sub">MoM 비교: 전월 데이터 없음</span>`;
+
+  row.innerHTML = `
+    <div class="kpi-card primary">
+      <div class="kpi-label">운용자산 총계</div>
+      <div class="kpi-value">${fmt(asset.total, 0)} <span style="font-size:14px;font-weight:500;opacity:0.8;">억원</span></div>
+      <div>${momHtml}</div>
+    </div>
+  `;
+
+  const topAssets = asset.categories.slice().sort((a,b) => b.amount - a.amount).slice(0,4);
+  topAssets.forEach(cat => {
+    const mom = calcMoM(cat.name, "asset");
+    const momH = mom !== null
+      ? `<span class="kpi-mom ${mom>0?'up':mom<0?'down':'flat'}">${mom>0?'▲':mom<0?'▼':'■'} ${(Math.abs(mom)*100).toFixed(2)}%</span>`
+      : ``;
+    const card = document.createElement("div");
+    card.className = "kpi-card";
+    card.innerHTML = `
+      <div class="kpi-label" style="color:${getColor(cat.name,'asset')};">${cat.name}</div>
+      <div class="kpi-value">${fmt(cat.amount, 0)}</div>
+      <div class="kpi-sub">비중 ${fmtPct(cat.weight)}</div>
+      ${momH ? `<div>${momH}</div>` : ''}
+    `;
+    row.appendChild(card);
+  });
+}
+
+function renderDonut(canvasId, legendId, categories, type) {
+  const ctx = document.getElementById(canvasId).getContext("2d");
+  const labels = categories.map(c => c.name);
+  const amounts = categories.map(c => c.amount);
+  const colors = categories.map(c => getColor(c.name, type));
+  
+  if (window[canvasId+"_chart"]) window[canvasId+"_chart"].destroy();
+  
+  window[canvasId+"_chart"] = new Chart(ctx, {
+    type: "doughnut",
+    data: { labels, datasets: [{ data: amounts, backgroundColor: colors, borderWidth: 2, borderColor: "#fff" }] },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: "62%",
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: "rgba(11,37,69,0.95)",
+          padding: 10,
+          callbacks: {
+            label: function(ctx) {
+              const total = categories.reduce((s,c)=>s+c.amount, 0);
+              const v = ctx.parsed;
+              return `${fmt(v, 0)} 억원 (${((v/total)*100).toFixed(2)}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
+  
+  const legendEl = document.getElementById(legendId);
+  legendEl.innerHTML = "";
+  const total = amounts.reduce((s,v)=>s+v, 0);
+  categories.forEach((cat, i) => {
+    const item = document.createElement("div");
+    item.className = "legend-item";
+    item.innerHTML = `
+      <span class="legend-swatch" style="background:${colors[i]};"></span>
+      <span class="legend-name">${cat.name}</span>
+      <span class="legend-amt">${fmt(cat.amount, 0)}</span>
+      <span class="legend-pct">${((cat.amount/total)*100).toFixed(2)}%</span>
+    `;
+    legendEl.appendChild(item);
+  });
+}
+
+function renderBar() {
+  const ctx = document.getElementById("assetBar").getContext("2d");
+  const asset = PORTFOLIO.data[currentMonth].asset_class;
+  const sorted = asset.categories.slice().sort((a,b) => b.amount - a.amount);
+  const labels = sorted.map(c => c.name);
+  const amounts = sorted.map(c => c.amount);
+  const colors = sorted.map(c => getColor(c.name, "asset"));
+  
+  if (window.assetBar_chart) window.assetBar_chart.destroy();
+  window.assetBar_chart = new Chart(ctx, {
+    type: "bar",
+    data: { labels, datasets: [{ data: amounts, backgroundColor: colors, borderRadius: 4 }] },
+    options: {
+      indexAxis: "y",
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: "rgba(11,37,69,0.95)",
+          callbacks: {
+            label: function(ctx) {
+              const total = asset.total;
+              const v = ctx.parsed.x;
+              return `${fmt(v, 0)} 억원 (${((v/total)*100).toFixed(2)}%)`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ticks: { callback: v => fmt(v, 0), font: { size: 11 }, color: "#64748B" },
+          grid: { color: "#F1F5F9" }
+        },
+        y: { ticks: { font: { size: 11.5 }, color: "#1F2937" }, grid: { display: false } }
+      }
+    }
+  });
+}
+
+function renderTreemap() {
+  const container = d3.select("#treemap");
+  container.selectAll("svg").remove();
+  const tinyEl = document.getElementById("treemapTiny");
+  tinyEl.style.display = "none";
+  tinyEl.innerHTML = "";
+  
+  const data = PORTFOLIO.data[currentMonth];
+  
+  // Build hierarchical root with parent groups
+  let rootData;
+  if (treemapView === "asset") {
+    rootData = {
+      name: "Portfolio",
+      children: data.asset_class.categories.map(cat => ({
+        name: cat.name,
+        parentColor: getColor(cat.name, "asset"),
+        weight: cat.weight,
+        amount: cat.amount,
+        children: cat.children
+          .filter(ch => ch.amount > 0) // exclude 충당금 (negative)
+          .map(ch => ({
+            name: ch.name,
+            value: ch.amount,
+            weight: ch.weight,
+            parentName: cat.name,
+            note: ch.note
+          }))
+      }))
+    };
+  } else {
+    rootData = {
+      name: "Portfolio",
+      children: data.accounting.categories.map(cat => ({
+        name: cat.name,
+        parentColor: getColor(cat.name, "acct"),
+        weight: cat.weight,
+        amount: cat.amount,
+        children: cat.children.flatMap(ch => {
+          if (ch.details && ch.details.length > 0) {
+            return ch.details
+              .filter(d => d.amount > 0)
+              .map(d => ({
+                name: d.name,
+                groupName: ch.name,
+                value: d.amount,
+                weight: d.weight,
+                parentName: cat.name
+              }));
+          }
+          return ch.amount > 0 ? [{
+            name: ch.name,
+            value: ch.amount,
+            weight: ch.weight,
+            parentName: cat.name
+          }] : [];
+        })
+      }))
+    };
+  }
+  
+  const wrap = document.getElementById("treemap");
+  const W = wrap.clientWidth;
+  const H = 620;
+  
+  const root = d3.hierarchy(rootData)
+    .sum(d => Math.max(d.value || 0, 0))
+    .sort((a, b) => b.value - a.value);
+  
+  const headerHeight = 28;
+  d3.treemap()
+    .size([W, H])
+    .paddingOuter(3)
+    .paddingTop(headerHeight)
+    .paddingInner(2)
+    .round(true)(root);
+  
+  const svg = container.append("svg").attr("width", W).attr("height", H);
+  const tooltip = d3.select("#treemapTooltip");
+  const total = root.value;
+  
+  // Draw parent groups (depth=1)
+  const parents = root.descendants().filter(d => d.depth === 1);
+  parents.forEach(parent => {
+    const g = svg.append("g")
+      .attr("transform", `translate(${parent.x0},${parent.y0})`);
+    
+    const w = parent.x1 - parent.x0;
+    const h = parent.y1 - parent.y0;
+    
+    // Parent header bar
+    g.append("rect")
+      .attr("width", w)
+      .attr("height", headerHeight)
+      .attr("fill", parent.data.parentColor)
+      .attr("rx", 2);
+    
+    // Parent label
+    const pctText = `${(parent.value / total * 100).toFixed(2)}%`;
+    const amtText = `${fmt(parent.value, 0)} 억원`;
+    
+    if (w >= 110) {
+      g.append("text")
+        .attr("class", "tm-parent-label")
+        .attr("x", 8)
+        .attr("y", 18)
+        .text(parent.data.name);
+      g.append("text")
+        .attr("class", "tm-parent-pct")
+        .attr("x", w - 8)
+        .attr("y", 18)
+        .attr("text-anchor", "end")
+        .text(`${pctText} · ${amtText}`);
+    } else if (w >= 60) {
+      g.append("text")
+        .attr("class", "tm-parent-label")
+        .attr("x", 6)
+        .attr("y", 18)
+        .text(parent.data.name);
+    }
+    
+    // Parent group border
+    g.append("rect")
+      .attr("class", "tm-parent-bg")
+      .attr("width", w)
+      .attr("height", h)
+      .attr("rx", 2)
+      .attr("fill", "none")
+      .attr("stroke", parent.data.parentColor)
+      .attr("stroke-width", 2)
+      .attr("opacity", 0.4);
+  });
+  
+  // Draw leaves (children)
+  const leaves = root.leaves();
+  const tinyItems = [];
+  
+  leaves.forEach((leaf, i) => {
+    const w = leaf.x1 - leaf.x0;
+    const h = leaf.y1 - leaf.y0;
+    const parentColor = leaf.parent.data.parentColor;
+    // Shade based on relative size within parent
+    const siblings = leaf.parent.children;
+    const idx = siblings.indexOf(leaf);
+    const shadeFactor = 0.1 + (idx * 0.12); // children get progressively lighter
+    const fillColor = shadeColor(parentColor, Math.min(shadeFactor, 0.55));
+    
+    // Skip very tiny boxes (collect to tiny list)
+    if (w < 30 || h < 20) {
+      tinyItems.push({
+        name: leaf.data.name,
+        parent: leaf.data.parentName,
+        value: leaf.value,
+        weight: leaf.value / total,
+        color: fillColor
+      });
+      return;
+    }
+    
+    const g = svg.append("g")
+      .attr("transform", `translate(${leaf.x0},${leaf.y0})`);
+    
+    g.append("rect")
+      .attr("class", "tm-child")
+      .attr("width", w)
+      .attr("height", h)
+      .attr("fill", fillColor)
+      .attr("rx", 1.5)
+      .on("mousemove", (event) => {
+        const wrapRect = wrap.getBoundingClientRect();
+        const x = event.clientX - wrapRect.left;
+        const y = event.clientY - wrapRect.top;
+        tooltip.style("opacity", 1)
+          .style("left", Math.min(x + 12, wrapRect.width - 220) + "px")
+          .style("top", (y + 12) + "px")
+          .html(`<b>${leaf.data.parentName}</b><br>${leaf.data.name}<br>${fmt(leaf.value,0)} 억원 (${(leaf.value/total*100).toFixed(2)}%)`);
+      })
+      .on("mouseleave", () => tooltip.style("opacity", 0));
+    
+    // Smart label sizing
+    const fontMain = w >= 100 && h >= 50 ? 13 : (w >= 70 && h >= 36 ? 11.5 : 10);
+    const fontSub = w >= 100 && h >= 50 ? 11 : 10;
+    const showSub = w >= 60 && h >= 40;
+    
+    // Truncate name to fit
+    let displayName = leaf.data.name;
+    const maxChars = Math.floor((w - 12) / (fontMain * 0.6));
+    if (displayName.length > maxChars && maxChars > 1) {
+      displayName = displayName.substring(0, Math.max(1, maxChars - 1)) + "…";
+    }
+    
+    g.append("text")
+      .attr("class", "tm-child-label")
+      .attr("x", 6)
+      .attr("y", fontMain + 4)
+      .attr("font-size", fontMain)
+      .text(displayName);
+    
+    if (showSub) {
+      let subY = fontMain + 4 + fontSub + 4;
+      g.append("text")
+        .attr("class", "tm-child-sublabel")
+        .attr("x", 6)
+        .attr("y", subY)
+        .attr("font-size", fontSub)
+        .text(`${fmt(leaf.value, 0)}`);
+      if (h >= 60) {
+        g.append("text")
+          .attr("class", "tm-child-sublabel")
+          .attr("x", 6)
+          .attr("y", subY + fontSub + 3)
+          .attr("font-size", fontSub)
+          .attr("opacity", 0.85)
+          .text(`${(leaf.value/total*100).toFixed(2)}%`);
+      }
+    }
+  });
+  
+  // Render tiny items as a list below
+  if (tinyItems.length > 0) {
+    tinyEl.style.display = "block";
+    tinyEl.innerHTML = `<b style="color:var(--text);">소규모 항목 (트리맵 미표시)</b>: ` + 
+      tinyItems.map(t => 
+        `<span class="tm-tiny-item"><span class="swatch" style="background:${t.color};"></span>${t.parent} · ${t.name} (${fmt(t.value,0)} / ${(t.weight*100).toFixed(3)}%)</span>`
+      ).join("");
+  }
+}
+
+function renderTrend() {
+  const area = document.getElementById("trendArea");
+  const count = document.getElementById("trendCount");
+  count.textContent = PORTFOLIO.months.length + " 개월";
+  
+  if (PORTFOLIO.months.length < 2) {
+    area.innerHTML = `
+      <div class="trend-empty">
+        <div class="empty-icon">📊</div>
+        <div style="font-weight:600;color:var(--text);">단월 데이터로 추이 분석이 제한됩니다</div>
+        <div style="margin-top:8px;font-size:12px;">월별 파일을 누적 적재하시면 자동으로 추이 차트가 활성화됩니다.<br>(파일명 규칙: <code>Portfolio_all_YYYYMM.xlsx</code>)</div>
+      </div>`;
+    return;
+  }
+  
+  area.innerHTML = '<canvas id="trendChart"></canvas>';
+  const ctx = document.getElementById("trendChart").getContext("2d");
+  
+  const months = PORTFOLIO.months;
+  const labels = months.map(fmtPeriod);
+  const categoryNames = PORTFOLIO.data[currentMonth].asset_class.categories.map(c => c.name);
+  
+  const datasets = categoryNames.map(name => ({
+    label: name,
+    data: months.map(m => {
+      const c = PORTFOLIO.data[m].asset_class.categories.find(cc => cc.name === name);
+      return c ? c.amount : 0;
+    }),
+    borderColor: getColor(name, "asset"),
+    backgroundColor: getColor(name, "asset"),
+    tension: 0.2,
+    pointRadius: 3
+  }));
+  
+  if (window.trend_chart) window.trend_chart.destroy();
+  window.trend_chart = new Chart(ctx, {
+    type: "line",
+    data: { labels, datasets },
+    options: {
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: "bottom", labels: { font: { size: 11 }, boxWidth: 10 } },
+        tooltip: { backgroundColor: "rgba(11,37,69,0.95)" }
+      },
+      scales: {
+        y: { ticks: { callback: v => fmt(v, 0), font: { size: 11 } }, grid: { color: "#F1F5F9" } },
+        x: { grid: { display: false }, ticks: { font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+// Plain HTML table renderer
+function buildTableData() {
+  const data = PORTFOLIO.data[currentMonth];
+  const total = data.asset_class.total;
+  const rows = [];
+  
+  if (tableView === "asset") {
+    data.asset_class.categories.forEach(cat => {
+      cat.children.forEach(ch => {
+        rows.push({
+          cat: cat.name,
+          name: ch.name,
+          amount: ch.amount,
+          weight: ch.amount / total,
+          note: ch.note || ""
+        });
+      });
+    });
+  } else {
+    data.accounting.categories.forEach(cat => {
+      cat.children.forEach(ch => {
+        if (ch.details && ch.details.length > 0) {
+          ch.details.forEach(d => {
+            rows.push({
+              cat: cat.name,
+              name: ch.name + " · " + d.name,
+              amount: d.amount,
+              weight: d.amount / total,
+              note: ""
+            });
+          });
+        } else {
+          rows.push({
+            cat: cat.name,
+            name: ch.name,
+            amount: ch.amount,
+            weight: ch.amount / total,
+            note: ""
+          });
+        }
+      });
+    });
+  }
+  return rows;
+}
+
+function applyFilterSearch(rows) {
+  let filtered = rows;
+  if (activeFilter) {
+    filtered = filtered.filter(r => r.cat === activeFilter);
+  }
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    filtered = filtered.filter(r => 
+      r.cat.toLowerCase().includes(q) ||
+      r.name.toLowerCase().includes(q) ||
+      (r.note || "").toLowerCase().includes(q)
+    );
+  }
+  if (sortCol) {
+    filtered = filtered.slice().sort((a, b) => {
+      let av = a[sortCol], bv = b[sortCol];
+      if (typeof av === "string") av = av || "";
+      if (typeof bv === "string") bv = bv || "";
+      if (av < bv) return sortDir === "asc" ? -1 : 1;
+      if (av > bv) return sortDir === "asc" ? 1 : -1;
+      return 0;
+    });
+  }
+  return filtered;
+}
+
+function renderTable() {
+  const allRows = buildTableData();
+  const rows = applyFilterSearch(allRows);
+  const container = document.getElementById("dataTable");
+  const catLabel = tableView === "asset" ? "대분류" : "회계분류";
+  const detailLabel = "세부 분류";
+  
+  let html = `<table class="data-table">
+    <thead><tr>
+      <th data-col="cat">${catLabel}<span class="sort-indicator"></span></th>
+      <th data-col="name">${detailLabel}<span class="sort-indicator"></span></th>
+      <th data-col="amount" class="num">잔액 (억원)<span class="sort-indicator"></span></th>
+      <th data-col="weight" class="num">비중<span class="sort-indicator"></span></th>
+      <th data-col="note">비고<span class="sort-indicator"></span></th>
+    </tr></thead><tbody>`;
+  
+  rows.forEach(r => {
+    const color = getColor(r.cat, tableView === "asset" ? "asset" : "acct");
+    html += `<tr>
+      <td><span class="cat-badge" style="background:${color};">${r.cat}</span></td>
+      <td>${r.name}</td>
+      <td class="num">${fmt(r.amount, 1)}</td>
+      <td class="num">${(r.weight * 100).toFixed(3)}%</td>
+      <td>${r.note}</td>
+    </tr>`;
+  });
+  
+  html += `</tbody></table>`;
+  container.innerHTML = html;
+  
+  // Mark sort indicator
+  if (sortCol) {
+    const th = container.querySelector(`th[data-col="${sortCol}"]`);
+    if (th) th.classList.add(sortDir === "asc" ? "sorted-asc" : "sorted-desc");
+  }
+  
+  // Attach sort handlers
+  container.querySelectorAll("thead th").forEach(th => {
+    th.addEventListener("click", () => {
+      const col = th.dataset.col;
+      if (sortCol === col) {
+        sortDir = sortDir === "asc" ? "desc" : "asc";
+      } else {
+        sortCol = col;
+        sortDir = (col === "amount" || col === "weight") ? "desc" : "asc";
+      }
+      renderTable();
+    });
+  });
+  
+  // Summary
+  const totalAmount = rows.reduce((s, r) => s + r.amount, 0);
+  const totalWeight = rows.reduce((s, r) => s + r.weight, 0);
+  document.getElementById("tableSummary").innerHTML = 
+    `표시: <b>${rows.length}건</b> / 전체 ${allRows.length}건 · 합계 <b>${fmt(totalAmount, 0)}</b> 억원 · 비중 합 <b>${(totalWeight*100).toFixed(2)}%</b>`;
+}
+
+function renderFilterBar() {
+  const data = PORTFOLIO.data[currentMonth];
+  const bar = document.getElementById("filterBar");
+  bar.innerHTML = "";
+  
+  const allChip = document.createElement("div");
+  allChip.className = "filter-chip" + (activeFilter === null ? " active" : "");
+  allChip.textContent = "전체";
+  allChip.addEventListener("click", () => {
+    activeFilter = null;
+    renderFilterBar();
+    renderTable();
+  });
+  bar.appendChild(allChip);
+  
+  const cats = tableView === "asset" ? data.asset_class.categories : data.accounting.categories;
+  cats.forEach(cat => {
+    const chip = document.createElement("div");
+    chip.className = "filter-chip" + (activeFilter === cat.name ? " active" : "");
+    chip.textContent = cat.name;
+    chip.addEventListener("click", () => {
+      activeFilter = (activeFilter === cat.name) ? null : cat.name;
+      renderFilterBar();
+      renderTable();
+    });
+    bar.appendChild(chip);
+  });
+}
+
+function renderAll() {
+  const data = PORTFOLIO.data[currentMonth];
+  renderKPI();
+  renderDonut("assetDonut", "assetLegend", data.asset_class.categories, "asset");
+  renderDonut("acctDonut", "acctLegend", data.accounting.categories, "acct");
+  renderBar();
+  renderTreemap();
+  renderTrend();
+  renderFilterBar();
+  renderTable();
+}
+
+// Setup tab handlers (delegate via parent containers)
+document.getElementById("treemapTabs").addEventListener("click", (e) => {
+  const btn = e.target.closest(".view-tab");
+  if (!btn) return;
+  document.querySelectorAll("#treemapTabs .view-tab").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  treemapView = btn.dataset.view;
+  renderTreemap();
+});
+
+document.getElementById("tableViewTabs").addEventListener("click", (e) => {
+  const btn = e.target.closest(".view-tab");
+  if (!btn) return;
+  document.querySelectorAll("#tableViewTabs .view-tab").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  tableView = btn.dataset.tableview;
+  activeFilter = null;
+  sortCol = null;
+  renderFilterBar();
+  renderTable();
+});
+
+document.getElementById("searchInput").addEventListener("input", (e) => {
+  searchQuery = e.target.value;
+  renderTable();
+});
+
+window.addEventListener("resize", () => {
+  renderTreemap();
+});
+
+initMonthSelector();
+renderAll();
+</script>
+</body>
+</html>
