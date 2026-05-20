@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>자산운용 포트폴리오 대시보드 v2</title>
+<title>자산운용 포트폴리오 대시보드 v5</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -55,7 +55,7 @@
     font-weight: 500;
   }
   .month-selector select option { background: var(--primary); color: #fff; }
-  
+
   .kpi-row {
     display: grid;
     grid-template-columns: 1.4fr repeat(4, 1fr);
@@ -88,7 +88,7 @@
   .kpi-mom.down { background: rgba(185,28,28,0.12); color: var(--negative); }
   .kpi-mom.flat { background: rgba(100,116,139,0.12); color: var(--text-soft); }
   .kpi-card.primary .kpi-mom { background: rgba(255,255,255,0.18); color: #fff; }
-  
+
   .panel-grid {
     display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;
   }
@@ -106,7 +106,7 @@
   }
   .panel-subtitle { font-size: 11.5px; color: var(--text-soft); margin-bottom: 16px; }
   .chart-wrap { position: relative; height: 280px; }
-  
+
   .donut-area { display: grid; grid-template-columns: 1.1fr 1fr; gap: 16px; align-items: center; }
   .donut-area .chart-wrap { height: 260px; }
   .legend-list { font-size: 12px; }
@@ -119,7 +119,7 @@
   .legend-name { flex: 1; color: var(--text); font-size: 12px; }
   .legend-pct { color: var(--text-soft); font-size: 11px; font-variant-numeric: tabular-nums; min-width: 50px; text-align: right; font-weight: 500; }
   .legend-amt { color: var(--text); font-size: 11px; font-variant-numeric: tabular-nums; min-width: 70px; text-align: right; font-weight: 600; }
-  
+
   /* Treemap improvements */
   .treemap-wrap { width: 100%; height: 620px; position: relative; }
   .tm-parent-bg {
@@ -176,19 +176,9 @@
     z-index: 10;
     white-space: nowrap;
   }
-  .tm-tiny-list {
-    margin-top: 10px;
-    padding: 10px 14px;
-    background: #F8FAFC;
-    border-radius: 6px;
-    font-size: 11.5px;
-    color: var(--text-soft);
-  }
-  .tm-tiny-item { display: inline-block; margin-right: 14px; }
-  .tm-tiny-item .swatch { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
-  
+
   .bar-wrap { position: relative; height: 320px; }
-  
+
   .table-section { background: var(--surface); border-radius: 10px; border: 1px solid var(--border); padding: 20px 22px; box-shadow: 0 1px 3px rgba(0,0,0,0.03); margin-bottom: 20px; }
   .table-controls {
     display: flex; gap: 16px; align-items: center; margin-bottom: 14px;
@@ -218,7 +208,7 @@
   }
   .filter-chip:hover { background: #E2E8F0; }
   .filter-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-  
+
   .view-tabs {
     display: inline-flex;
     background: #F1F5F9;
@@ -237,7 +227,7 @@
     user-select: none;
   }
   .view-tab.active { background: var(--surface); color: var(--primary); box-shadow: 0 1px 3px rgba(0,0,0,0.08); font-weight: 600; }
-  
+
   /* Plain table */
   .data-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
   .data-table thead th {
@@ -281,19 +271,53 @@
     color: var(--text-soft);
     text-align: right;
   }
-  
+
   .trend-empty {
     text-align: center; padding: 40px 20px; color: var(--text-soft); font-size: 13px;
   }
   .trend-empty .empty-icon { font-size: 32px; margin-bottom: 12px; opacity: 0.4; }
-  
+
   footer { text-align: center; color: var(--text-soft); font-size: 11px; padding: 20px 0; }
-  
+
   @media (max-width: 1100px) {
     .kpi-row { grid-template-columns: repeat(2, 1fr); }
     .kpi-card.primary { grid-column: 1 / -1; }
     .panel-grid { grid-template-columns: 1fr; }
   }
+</style>
+
+<style id="hw-style">
+  .hw-divider {
+    margin: 34px 0 18px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-soft) 100%);
+    color:#fff; border-radius:12px; padding:20px 26px;
+    display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px;
+    box-shadow:0 4px 16px rgba(11,37,69,0.12);
+  }
+  .hw-divider h2 { font-size:19px; font-weight:700; letter-spacing:-0.5px; }
+  .hw-divider .hw-sub { font-size:12px; opacity:0.85; margin-top:4px; font-weight:400; }
+  .hw-divider .view-tabs { background: rgba(255,255,255,0.12); }
+  .hw-divider .view-tab { color: rgba(255,255,255,0.8); }
+  .hw-divider .view-tab.active { background:#fff; color:var(--primary); }
+  .hw-subhead {
+    font-size:14.5px; font-weight:700; color:var(--primary);
+    border-left:4px solid var(--accent); padding-left:10px; margin:22px 0 12px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .hw-subhead .hw-tag { font-size:11px; font-weight:500; color:var(--text-soft); }
+  .hw-chart-260 { position:relative; height:280px; }
+  .hw-chart-300 { position:relative; height:320px; }
+  .hw-table-scroll { overflow-x:auto; }
+  .hw-table-scroll table.data-table td:first-child,
+  .hw-table-scroll table.data-table th:first-child {
+    position:sticky; left:0; background:var(--surface); z-index:2; min-width:140px; font-weight:600;
+  }
+  .hw-table-scroll table.data-table thead th:first-child { background:#F8FAFC; }
+  .hw-table-scroll table.data-table thead th { text-align:right; }
+  .hw-table-scroll table.data-table thead th:first-child { text-align:left; }
+  .hw-table-scroll tr.hw-total td { font-weight:700; border-top:2px solid var(--border); background:#F8FAFC; }
+  .hw-table-scroll tr.hw-sub td:first-child { padding-left:24px; color:var(--text-soft); font-weight:500; }
+  .hw-note { font-size:11px; color:var(--text-soft); margin-top:8px; }
 </style>
 </head>
 <body>
@@ -325,29 +349,33 @@
     </div>
     <div class="panel">
       <div class="panel-title">
-        <span>회계분류별 구성</span>
-        <span style="font-size:11px;color:var(--text-soft);font-weight:500;">K-IFRS 기준</span>
+        <span id="altCompTitle">회계분류별 구성</span>
+        <div class="view-tabs" id="compTabs">
+          <button class="view-tab active" data-comp="acct">회계분류별</button>
+          <button class="view-tab" data-comp="account">계정별</button>
+        </div>
       </div>
-      <div class="panel-subtitle">FVPL · FVOCI · AC/지분법 · 기타</div>
+      <div class="panel-subtitle" id="altCompSub">K-IFRS 기준 · FVPL · FVOCI · AC/지분법 · 기타</div>
       <div class="donut-area">
-        <div class="chart-wrap"><canvas id="acctDonut"></canvas></div>
-        <div class="legend-list" id="acctLegend"></div>
+        <div class="chart-wrap"><canvas id="altCompDonut"></canvas></div>
+        <div class="legend-list" id="altCompLegend"></div>
       </div>
     </div>
   </div>
 
   <div class="panel" style="margin-bottom: 20px;">
     <div class="panel-title">
-      <span>세부 분류 트리맵 (대분류 → 세부분류)</span>
+      <span id="treemapTitle">세부 분류 트리맵 (대분류 → 세부분류)</span>
       <div class="view-tabs" id="treemapTabs">
         <button class="view-tab active" data-view="asset">자산군 기준</button>
         <button class="view-tab" data-view="acct">회계분류 기준</button>
+        <button class="view-tab" data-view="account">계정 기준</button>
       </div>
     </div>
-    <div class="panel-subtitle">상단 헤더는 대분류명, 내부 블록은 세부분류 · 박스 면적은 잔액에 비례 · hover 시 상세표시</div>
-    <div class="treemap-wrap" id="treemap"></div>
-    <div class="treemap-tooltip" id="treemapTooltip"></div>
-    <div class="tm-tiny-list" id="treemapTiny" style="display:none;"></div>
+    <div class="panel-subtitle">상단 헤더는 분류명, 내부 블록은 세부분류 · 박스 면적은 잔액에 비례 · 작은 항목은 마우스를 올리면 항목·금액이 표시됩니다</div>
+    <div class="treemap-wrap" id="treemap">
+      <div class="treemap-tooltip" id="treemapTooltip"></div>
+    </div>
   </div>
 
   <div class="panel-grid">
@@ -372,6 +400,7 @@
       <div class="view-tabs" id="tableViewTabs">
         <button class="view-tab active" data-tableview="asset">자산군 기준</button>
         <button class="view-tab" data-tableview="acct">회계분류 기준</button>
+        <button class="view-tab" data-tableview="account">계정 기준</button>
       </div>
     </div>
     <div class="panel-subtitle" style="margin-bottom:14px;">대분류 칩 클릭으로 필터, 검색창 입력으로 조회, 컬럼 헤더 클릭으로 정렬</div>
@@ -382,6 +411,90 @@
     <div id="dataTable"></div>
     <div class="table-summary" id="tableSummary"></div>
   </div>
+
+
+  <!-- ===================== 한화손해보험 재무·손익·본드포워드 섹션 ===================== -->
+  <div class="hw-divider">
+    <div>
+      <h2>한화손해보험 개별재무 현황 · 손익 · 본드포워드</h2>
+      <div class="hw-sub" id="hwSubtitle">개별(별도)재무제표 기준 · 단위: 억원, % · 2023.1Q ~ 2025.4Q · 출처: FISIS 금융통계정보시스템, 본드포워드(사내 집계)</div>
+    </div>
+    <div class="view-tabs" id="hwModeTabs">
+      <button class="view-tab active" data-mode="Q">분기별</button>
+      <button class="view-tab" data-mode="Y">연도별</button>
+    </div>
+  </div>
+
+  <div class="kpi-row" id="hwKpiRow" style="grid-template-columns: repeat(5, 1fr);"></div>
+
+  <!-- ① 재무상태 -->
+  <div class="hw-subhead">① 주요 재무현황 <span class="hw-tag">자산 · 부채 · 자본</span></div>
+  <div class="panel-grid">
+    <div class="panel">
+      <div class="panel-title"><span>자산총계 구성 추이</span></div>
+      <div class="panel-subtitle">운용자산 + 비운용자산 = 자산총계</div>
+      <div class="hw-chart-260"><canvas id="hwAssetComp"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title"><span>부채 · 자본 추이</span></div>
+      <div class="panel-subtitle">부채총계 · 책임준비금 · 자본총계</div>
+      <div class="hw-chart-260"><canvas id="hwLiabEquity"></canvas></div>
+    </div>
+  </div>
+  <div class="panel" style="margin-bottom:16px;">
+    <div class="panel-title"><span>자본총계 구성 추이</span></div>
+    <div class="panel-subtitle">자본금 · 자본잉여금 · 신종자본증권 · 이익잉여금 · 자본조정 · 기타포괄손익누계액 (선: 자본총계)</div>
+    <div class="hw-chart-300"><canvas id="hwCapital"></canvas></div>
+  </div>
+  <div class="table-section">
+    <div class="panel-title" style="margin-bottom:12px;"><span>재무상태 상세</span><span style="font-size:11px;color:var(--text-soft);font-weight:500;">단위: 억원</span></div>
+    <div class="hw-table-scroll" id="hwFinTable"></div>
+  </div>
+
+  <!-- ② 자산 세부 -->
+  <div class="hw-subhead">② 운용자산 세부 구성 <span class="hw-tag">12개 자산유형</span></div>
+  <div class="panel" style="margin-bottom:16px;">
+    <div class="panel-title"><span>자산 세부 구성 추이</span></div>
+    <div class="panel-subtitle">현금및예치금 · 주식 · 출자금 · 채권 · 수익증권 · 외화증권 · 유가증권내기타 · 관계·종속기업 · 대출채권 · 부동산 · 파생상품 · 기타</div>
+    <div class="hw-chart-300"><canvas id="hwAsset12"></canvas></div>
+  </div>
+  <div class="table-section">
+    <div class="panel-title" style="margin-bottom:12px;"><span>자산 세부 상세</span><span style="font-size:11px;color:var(--text-soft);font-weight:500;">단위: 억원</span></div>
+    <div class="hw-table-scroll" id="hwAsset12Table"></div>
+  </div>
+
+  <!-- ③ 본드포워드 -->
+  <div class="hw-subhead">③ 본드포워드 보유 추이 <span class="hw-tag">미결제약정(명목) · 국고채30년 금리</span></div>
+  <div class="panel" style="margin-bottom:16px;">
+    <div class="panel-title"><span>본드포워드 명목금액 · 국고채30년 금리</span></div>
+    <div class="panel-subtitle">막대: 본드포워드 명목금액(억원, 좌) · 선: 국고채30년 금리(%, 우)</div>
+    <div class="hw-chart-300"><canvas id="hwBond"></canvas></div>
+    <div class="hw-note">※ 본드포워드 = 현금흐름위험회피(이자율위험) 선도계약 명목금액. 출처: 사업/분기보고서 위험회피수단 주석(별도재무제표 기준) + 사내 자산운용실 집계. 국고채30년 25.2Q~4Q는 미집계.</div>
+  </div>
+  <div class="table-section">
+    <div class="panel-title" style="margin-bottom:12px;"><span>본드포워드 상세</span></div>
+    <div class="hw-table-scroll" id="hwBondTable"></div>
+  </div>
+
+  <!-- ④ 손익 -->
+  <div class="hw-subhead">④ 손익 및 재무지표 <span class="hw-tag" id="hwIncomeTag">분기 실적</span></div>
+  <div class="panel-grid">
+    <div class="panel">
+      <div class="panel-title"><span>손익 추이</span></div>
+      <div class="panel-subtitle">막대: 보험손익 + 투자손익 (= 영업이익) · 선: 당기순이익</div>
+      <div class="hw-chart-260"><canvas id="hwIncome"></canvas></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title"><span>재무지표 추이</span></div>
+      <div class="panel-subtitle" id="hwRatioSub">ROA · ROE · 투자수익률 (%)</div>
+      <div class="hw-chart-260"><canvas id="hwRatio"></canvas></div>
+    </div>
+  </div>
+  <div class="table-section">
+    <div class="panel-title" style="margin-bottom:12px;"><span>손익 · 재무지표 상세</span><span style="font-size:11px;color:var(--text-soft);font-weight:500;">손익 단위: 억원 / 지표: %</span></div>
+    <div class="hw-table-scroll" id="hwIncomeTable"></div>
+  </div>
+  <!-- ===================== /한화손해보험 섹션 ===================== -->
 
   <footer>© 자산운용실 투자심사팀 · 본 자료는 보고·검토 목적으로 작성되었음</footer>
 </div>
@@ -405,6 +518,58 @@ const ACCT_COLORS = {
   "AC/지분법": "#B45309",
   "기 타": "#475569"
 };
+const ACCOUNT_COLORS = {
+  "일반계정": "#0B2545",
+  "장기계정": "#0F766E",
+  "연금계정": "#BE9B30"
+};
+
+// 계정별(account) 차원 데이터 주입 — 출처: CY26.03末 계정별 구성표 (단위: 억원)
+// 각 항목: [대분류, 세부분류, 잔액]. 충당금(음수)은 명세표에는 표시, 트리맵에서는 제외(amount>0 필터).
+(function injectAccountData() {
+  const groupOrder = ["주식", "국내채권", "해외채권", "대체투자", "기업대출", "개인대출", "기타"];
+  const officialTotals = { "일반계정": 36655, "장기계정": 140125, "연금계정": 6919 };
+  const detail = {
+    "일반계정": [
+      ["주식","직접운용",860],["주식","전략주식",2751],["주식","수익증권",2],["주식","비상장주식",1431],["주식","해외주식",129],
+      ["국내채권","국공채",3259],["국내채권","특수채",3062],["국내채권","금융채",1688],["국내채권","회사채",1236],["국내채권","신종/CP",4109],["국내채권","수익증권",304],["국내채권","파생결합",81],["국내채권","구조화예금",527],
+      ["해외채권","직접운용",1102],["해외채권","파생결합",293],["해외채권","수익증권",104],
+      ["대체투자","인프라",2436],["대체투자","부동산",1568],["대체투자","상품/구조화",85],["대체투자","사모투자",3761],
+      ["기업대출","인프라",851],["기업대출","부동산",850],["기업대출","사모투자",200],["기업대출","충당금",-43],
+      ["개인대출","부동산",153],["개인대출","신용",16],["개인대출","충당금",-1],
+      ["기타","단기자금",2307],["기타","부동산",3535]
+    ],
+    "장기계정": [
+      ["주식","직접운용",520],["주식","수익증권",66],["주식","해외주식",18],
+      ["국내채권","국공채",37146],["국내채권","특수채",16055],["국내채권","회사채",6465],["국내채권","신종/CP",2080],["국내채권","수익증권",113],["국내채권","파생결합",364],["국내채권","구조화예금",844],
+      ["해외채권","직접운용",12133],["해외채권","파생결합",844],["해외채권","수익증권",177],["해외채권","구조화예금",1348],
+      ["대체투자","인프라",26903],["대체투자","부동산",1442],["대체투자","상품/구조화",785],["대체투자","사모투자",1222],
+      ["기업대출","인프라",10674],["기업대출","부동산",11760],["기업대출","사모투자",36],["기업대출","충당금",-46],
+      ["개인대출","부동산",3125],["개인대출","신용",40],["개인대출","충당금",-13],
+      ["기타","단기자금",6023]
+    ],
+    "연금계정": [
+      ["주식","전략주식",67],["주식","수익증권",100],
+      ["국내채권","국공채",4184],["국내채권","특수채",1225],["국내채권","회사채",448],["국내채권","신종/CP",204],
+      ["해외채권","직접운용",454],
+      ["개인대출","부동산",15],
+      ["기타","단기자금",221]
+    ]
+  };
+  const grand = Object.values(officialTotals).reduce((s, v) => s + v, 0); // 183,699
+  const categories = Object.keys(detail).map(acc => {
+    const children = detail[acc].map(([g, n, amt]) => ({
+      name: n,
+      groupName: g,
+      groupIndex: groupOrder.indexOf(g),
+      amount: amt,
+      weight: amt / grand,
+      note: g
+    }));
+    return { name: acc, amount: officialTotals[acc], weight: officialTotals[acc] / grand, children };
+  });
+  PORTFOLIO.data["202603"].account = { total: grand, categories };
+})();
 
 // Generate lighter shade for children
 function shadeColor(hex, percent) {
@@ -430,13 +595,14 @@ function fmtPeriod(yyyymm) {
   return "CY " + yyyymm.substring(2,4) + "." + yyyymm.substring(4,6) + " 末";
 }
 function getColor(name, type) {
-  const palette = type === "asset" ? ASSET_COLORS : ACCT_COLORS;
+  const palette = type === "asset" ? ASSET_COLORS : (type === "account" ? ACCOUNT_COLORS : ACCT_COLORS);
   return palette[name] || "#94A3B8";
 }
 
 let currentMonth = PORTFOLIO.latest;
 let treemapView = "asset";
 let tableView = "asset";
+let compView = "acct";
 let activeFilter = null;
 let searchQuery = "";
 let sortCol = null;
@@ -520,9 +686,9 @@ function renderDonut(canvasId, legendId, categories, type) {
   const labels = categories.map(c => c.name);
   const amounts = categories.map(c => c.amount);
   const colors = categories.map(c => getColor(c.name, type));
-  
+
   if (window[canvasId+"_chart"]) window[canvasId+"_chart"].destroy();
-  
+
   window[canvasId+"_chart"] = new Chart(ctx, {
     type: "doughnut",
     data: { labels, datasets: [{ data: amounts, backgroundColor: colors, borderWidth: 2, borderColor: "#fff" }] },
@@ -546,7 +712,7 @@ function renderDonut(canvasId, legendId, categories, type) {
       }
     }
   });
-  
+
   const legendEl = document.getElementById(legendId);
   legendEl.innerHTML = "";
   const total = amounts.reduce((s,v)=>s+v, 0);
@@ -563,6 +729,22 @@ function renderDonut(canvasId, legendId, categories, type) {
   });
 }
 
+// 우측 구성 패널: 회계분류별 / 계정별 탭 전환
+function renderAltComp() {
+  const data = PORTFOLIO.data[currentMonth];
+  const titleEl = document.getElementById("altCompTitle");
+  const subEl = document.getElementById("altCompSub");
+  if (compView === "account") {
+    titleEl.textContent = "계정별 구성";
+    subEl.textContent = "일반계정 · 장기계정 · 연금계정";
+    renderDonut("altCompDonut", "altCompLegend", data.account.categories, "account");
+  } else {
+    titleEl.textContent = "회계분류별 구성";
+    subEl.textContent = "K-IFRS 기준 · FVPL · FVOCI · AC/지분법 · 기타";
+    renderDonut("altCompDonut", "altCompLegend", data.accounting.categories, "acct");
+  }
+}
+
 function renderBar() {
   const ctx = document.getElementById("assetBar").getContext("2d");
   const asset = PORTFOLIO.data[currentMonth].asset_class;
@@ -570,7 +752,7 @@ function renderBar() {
   const labels = sorted.map(c => c.name);
   const amounts = sorted.map(c => c.amount);
   const colors = sorted.map(c => getColor(c.name, "asset"));
-  
+
   if (window.assetBar_chart) window.assetBar_chart.destroy();
   window.assetBar_chart = new Chart(ctx, {
     type: "bar",
@@ -605,12 +787,17 @@ function renderBar() {
 function renderTreemap() {
   const container = d3.select("#treemap");
   container.selectAll("svg").remove();
-  const tinyEl = document.getElementById("treemapTiny");
-  tinyEl.style.display = "none";
-  tinyEl.innerHTML = "";
-  
+
+  const titleEl = document.getElementById("treemapTitle");
+  if (titleEl) {
+    const depthLabel = treemapView === "asset" ? "대분류 → 세부분류"
+      : treemapView === "acct" ? "회계분류 → 세부분류"
+      : "계정 → 세부분류";
+    titleEl.textContent = "세부 분류 트리맵 (" + depthLabel + ")";
+  }
+
   const data = PORTFOLIO.data[currentMonth];
-  
+
   // Build hierarchical root with parent groups
   let rootData;
   if (treemapView === "asset") {
@@ -629,6 +816,26 @@ function renderTreemap() {
             weight: ch.weight,
             parentName: cat.name,
             note: ch.note
+          }))
+      }))
+    };
+  } else if (treemapView === "account") {
+    rootData = {
+      name: "Portfolio",
+      children: data.account.categories.map(cat => ({
+        name: cat.name,
+        parentColor: getColor(cat.name, "account"),
+        weight: cat.weight,
+        amount: cat.amount,
+        children: cat.children
+          .filter(ch => ch.amount > 0)
+          .map(ch => ({
+            name: ch.name,
+            groupName: ch.groupName,
+            groupIndex: ch.groupIndex,
+            value: ch.amount,
+            weight: ch.weight,
+            parentName: cat.name
           }))
       }))
     };
@@ -662,47 +869,47 @@ function renderTreemap() {
       }))
     };
   }
-  
+
   const wrap = document.getElementById("treemap");
   const W = wrap.clientWidth;
   const H = 620;
-  
+
   const root = d3.hierarchy(rootData)
     .sum(d => Math.max(d.value || 0, 0))
     .sort((a, b) => b.value - a.value);
-  
+
   const headerHeight = 28;
   d3.treemap()
     .size([W, H])
     .paddingOuter(3)
     .paddingTop(headerHeight)
-    .paddingInner(2)
+    .paddingInner(1)
     .round(true)(root);
-  
+
   const svg = container.append("svg").attr("width", W).attr("height", H);
   const tooltip = d3.select("#treemapTooltip");
   const total = root.value;
-  
+
   // Draw parent groups (depth=1)
   const parents = root.descendants().filter(d => d.depth === 1);
   parents.forEach(parent => {
     const g = svg.append("g")
       .attr("transform", `translate(${parent.x0},${parent.y0})`);
-    
+
     const w = parent.x1 - parent.x0;
     const h = parent.y1 - parent.y0;
-    
+
     // Parent header bar
     g.append("rect")
       .attr("width", w)
       .attr("height", headerHeight)
       .attr("fill", parent.data.parentColor)
       .attr("rx", 2);
-    
+
     // Parent label
     const pctText = `${(parent.value / total * 100).toFixed(2)}%`;
     const amtText = `${fmt(parent.value, 0)} 억원`;
-    
+
     if (w >= 110) {
       g.append("text")
         .attr("class", "tm-parent-label")
@@ -722,7 +929,7 @@ function renderTreemap() {
         .attr("y", 18)
         .text(parent.data.name);
     }
-    
+
     // Parent group border
     g.append("rect")
       .attr("class", "tm-parent-bg")
@@ -734,72 +941,70 @@ function renderTreemap() {
       .attr("stroke-width", 2)
       .attr("opacity", 0.4);
   });
-  
-  // Draw leaves (children)
+
+  // Draw leaves (children) — 모든 항목을 표시. 작은 박스는 라벨을 생략하고 hover로 항목·금액 표시.
   const leaves = root.leaves();
-  const tinyItems = [];
-  
+
   leaves.forEach((leaf, i) => {
     const w = leaf.x1 - leaf.x0;
     const h = leaf.y1 - leaf.y0;
+    if (w <= 0.5 || h <= 0.5) return; // 면적이 사실상 없는 경우만 제외
     const parentColor = leaf.parent.data.parentColor;
-    // Shade based on relative size within parent
-    const siblings = leaf.parent.children;
-    const idx = siblings.indexOf(leaf);
-    const shadeFactor = 0.1 + (idx * 0.12); // children get progressively lighter
-    const fillColor = shadeColor(parentColor, Math.min(shadeFactor, 0.55));
-    
-    // Skip very tiny boxes (collect to tiny list)
-    if (w < 30 || h < 20) {
-      tinyItems.push({
-        name: leaf.data.name,
-        parent: leaf.data.parentName,
-        value: leaf.value,
-        weight: leaf.value / total,
-        color: fillColor
-      });
-      return;
+    // Shade: 계정 기준에서는 대분류(groupIndex) 단위로 묶어 음영, 그 외에는 형제 순서 기준
+    let shadeFactor;
+    if (leaf.data.groupIndex !== undefined && leaf.data.groupIndex !== null) {
+      shadeFactor = 0.08 + (leaf.data.groupIndex * 0.075); // 대분류별로 점진적으로 밝게
+    } else {
+      const siblings = leaf.parent.children;
+      const idx = siblings.indexOf(leaf);
+      shadeFactor = 0.1 + (idx * 0.12); // children get progressively lighter
     }
-    
+    const fillColor = shadeColor(parentColor, Math.min(shadeFactor, 0.6));
+    const tiny = (w < 30 || h < 20);
+
     const g = svg.append("g")
       .attr("transform", `translate(${leaf.x0},${leaf.y0})`);
-    
+
     g.append("rect")
       .attr("class", "tm-child")
       .attr("width", w)
       .attr("height", h)
       .attr("fill", fillColor)
       .attr("rx", 1.5)
+      .style("stroke-width", tiny ? "0.5px" : "1.5px")
       .on("mousemove", (event) => {
         const wrapRect = wrap.getBoundingClientRect();
         const x = event.clientX - wrapRect.left;
         const y = event.clientY - wrapRect.top;
         tooltip.style("opacity", 1)
-          .style("left", Math.min(x + 12, wrapRect.width - 220) + "px")
-          .style("top", (y + 12) + "px")
-          .html(`<b>${leaf.data.parentName}</b><br>${leaf.data.name}<br>${fmt(leaf.value,0)} 억원 (${(leaf.value/total*100).toFixed(2)}%)`);
+          .style("left", Math.max(0, Math.min(x + 12, wrapRect.width - 220)) + "px")
+          .style("top", Math.max(0, Math.min(y + 12, wrapRect.height - 56)) + "px")
+          .html(`<b>${leaf.data.parentName}</b><br>${leaf.data.groupName ? leaf.data.groupName + " · " : ""}${leaf.data.name}<br>${fmt(leaf.value,0)} 억원 (${(leaf.value/total*100).toFixed(2)}%)`);
       })
       .on("mouseleave", () => tooltip.style("opacity", 0));
-    
+
+    // 작은 박스는 라벨 생략 (hover로 확인)
+    if (tiny) return;
+
     // Smart label sizing
     const fontMain = w >= 100 && h >= 50 ? 13 : (w >= 70 && h >= 36 ? 11.5 : 10);
     const fontSub = w >= 100 && h >= 50 ? 11 : 10;
     const showSub = w >= 60 && h >= 40;
-    
+
     // Truncate name to fit
     let displayName = leaf.data.name;
     const maxChars = Math.floor((w - 12) / (fontMain * 0.6));
     if (displayName.length > maxChars && maxChars > 1) {
       displayName = displayName.substring(0, Math.max(1, maxChars - 1)) + "…";
     }
-    
+
     g.append("text")
       .attr("class", "tm-child-label")
       .attr("x", 6)
       .attr("y", fontMain + 4)
       .attr("font-size", fontMain)
       .text(displayName);
-    
+
     if (showSub) {
       let subY = fontMain + 4 + fontSub + 4;
       g.append("text")
@@ -819,22 +1024,13 @@ function renderTreemap() {
       }
     }
   });
-  
-  // Render tiny items as a list below
-  if (tinyItems.length > 0) {
-    tinyEl.style.display = "block";
-    tinyEl.innerHTML = `<b style="color:var(--text);">소규모 항목 (트리맵 미표시)</b>: ` + 
-      tinyItems.map(t => 
-        `<span class="tm-tiny-item"><span class="swatch" style="background:${t.color};"></span>${t.parent} · ${t.name} (${fmt(t.value,0)} / ${(t.weight*100).toFixed(3)}%)</span>`
-      ).join("");
-  }
 }
 
 function renderTrend() {
   const area = document.getElementById("trendArea");
   const count = document.getElementById("trendCount");
   count.textContent = PORTFOLIO.months.length + " 개월";
-  
+
   if (PORTFOLIO.months.length < 2) {
     area.innerHTML = `
       <div class="trend-empty">
@@ -844,14 +1040,14 @@ function renderTrend() {
       </div>`;
     return;
   }
-  
+
   area.innerHTML = '<canvas id="trendChart"></canvas>';
   const ctx = document.getElementById("trendChart").getContext("2d");
-  
+
   const months = PORTFOLIO.months;
   const labels = months.map(fmtPeriod);
   const categoryNames = PORTFOLIO.data[currentMonth].asset_class.categories.map(c => c.name);
-  
+
   const datasets = categoryNames.map(name => ({
     label: name,
     data: months.map(m => {
@@ -863,7 +1059,7 @@ function renderTrend() {
     tension: 0.2,
     pointRadius: 3
   }));
-  
+
   if (window.trend_chart) window.trend_chart.destroy();
   window.trend_chart = new Chart(ctx, {
     type: "line",
@@ -887,7 +1083,7 @@ function buildTableData() {
   const data = PORTFOLIO.data[currentMonth];
   const total = data.asset_class.total;
   const rows = [];
-  
+
   if (tableView === "asset") {
     data.asset_class.categories.forEach(cat => {
       cat.children.forEach(ch => {
@@ -897,6 +1093,18 @@ function buildTableData() {
           amount: ch.amount,
           weight: ch.amount / total,
           note: ch.note || ""
+        });
+      });
+    });
+  } else if (tableView === "account") {
+    data.account.categories.forEach(cat => {
+      cat.children.forEach(ch => {
+        rows.push({
+          cat: cat.name,
+          name: (ch.groupName ? ch.groupName + " · " : "") + ch.name,
+          amount: ch.amount,
+          weight: ch.amount / total,
+          note: ch.groupName || ""
         });
       });
     });
@@ -935,7 +1143,7 @@ function applyFilterSearch(rows) {
   }
   if (searchQuery) {
     const q = searchQuery.toLowerCase();
-    filtered = filtered.filter(r => 
+    filtered = filtered.filter(r =>
       r.cat.toLowerCase().includes(q) ||
       r.name.toLowerCase().includes(q) ||
       (r.note || "").toLowerCase().includes(q)
@@ -958,9 +1166,9 @@ function renderTable() {
   const allRows = buildTableData();
   const rows = applyFilterSearch(allRows);
   const container = document.getElementById("dataTable");
-  const catLabel = tableView === "asset" ? "대분류" : "회계분류";
+  const catLabel = tableView === "asset" ? "대분류" : (tableView === "account" ? "계정" : "회계분류");
   const detailLabel = "세부 분류";
-  
+
   let html = `<table class="data-table">
     <thead><tr>
       <th data-col="cat">${catLabel}<span class="sort-indicator"></span></th>
@@ -969,9 +1177,9 @@ function renderTable() {
       <th data-col="weight" class="num">비중<span class="sort-indicator"></span></th>
       <th data-col="note">비고<span class="sort-indicator"></span></th>
     </tr></thead><tbody>`;
-  
+
   rows.forEach(r => {
-    const color = getColor(r.cat, tableView === "asset" ? "asset" : "acct");
+    const color = getColor(r.cat, tableView === "asset" ? "asset" : (tableView === "account" ? "account" : "acct"));
     html += `<tr>
       <td><span class="cat-badge" style="background:${color};">${r.cat}</span></td>
       <td>${r.name}</td>
@@ -980,16 +1188,16 @@ function renderTable() {
       <td>${r.note}</td>
     </tr>`;
   });
-  
+
   html += `</tbody></table>`;
   container.innerHTML = html;
-  
+
   // Mark sort indicator
   if (sortCol) {
     const th = container.querySelector(`th[data-col="${sortCol}"]`);
     if (th) th.classList.add(sortDir === "asc" ? "sorted-asc" : "sorted-desc");
   }
-  
+
   // Attach sort handlers
   container.querySelectorAll("thead th").forEach(th => {
     th.addEventListener("click", () => {
@@ -1003,11 +1211,11 @@ function renderTable() {
       renderTable();
     });
   });
-  
+
   // Summary
   const totalAmount = rows.reduce((s, r) => s + r.amount, 0);
   const totalWeight = rows.reduce((s, r) => s + r.weight, 0);
-  document.getElementById("tableSummary").innerHTML = 
+  document.getElementById("tableSummary").innerHTML =
     `표시: <b>${rows.length}건</b> / 전체 ${allRows.length}건 · 합계 <b>${fmt(totalAmount, 0)}</b> 억원 · 비중 합 <b>${(totalWeight*100).toFixed(2)}%</b>`;
 }
 
@@ -1015,7 +1223,7 @@ function renderFilterBar() {
   const data = PORTFOLIO.data[currentMonth];
   const bar = document.getElementById("filterBar");
   bar.innerHTML = "";
-  
+
   const allChip = document.createElement("div");
   allChip.className = "filter-chip" + (activeFilter === null ? " active" : "");
   allChip.textContent = "전체";
@@ -1025,8 +1233,9 @@ function renderFilterBar() {
     renderTable();
   });
   bar.appendChild(allChip);
-  
-  const cats = tableView === "asset" ? data.asset_class.categories : data.accounting.categories;
+
+  const cats = tableView === "asset" ? data.asset_class.categories
+    : (tableView === "account" ? data.account.categories : data.accounting.categories);
   cats.forEach(cat => {
     const chip = document.createElement("div");
     chip.className = "filter-chip" + (activeFilter === cat.name ? " active" : "");
@@ -1044,7 +1253,7 @@ function renderAll() {
   const data = PORTFOLIO.data[currentMonth];
   renderKPI();
   renderDonut("assetDonut", "assetLegend", data.asset_class.categories, "asset");
-  renderDonut("acctDonut", "acctLegend", data.accounting.categories, "acct");
+  renderAltComp();
   renderBar();
   renderTreemap();
   renderTrend();
@@ -1053,6 +1262,15 @@ function renderAll() {
 }
 
 // Setup tab handlers (delegate via parent containers)
+document.getElementById("compTabs").addEventListener("click", (e) => {
+  const btn = e.target.closest(".view-tab");
+  if (!btn) return;
+  document.querySelectorAll("#compTabs .view-tab").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  compView = btn.dataset.comp;
+  renderAltComp();
+});
+
 document.getElementById("treemapTabs").addEventListener("click", (e) => {
   const btn = e.target.closest(".view-tab");
   if (!btn) return;
@@ -1086,5 +1304,214 @@ window.addEventListener("resize", () => {
 initMonthSelector();
 renderAll();
 </script>
+
+<script>
+(function(){
+  const HW = {"asset12_labels": ["현금및예치금", "주식", "출자금", "채권", "수익증권", "외화증권", "유가증권내기타", "관계·종속기업", "대출채권", "부동산", "파생상품", "기타"], "basis": "개별(별도)재무제표 · FISIS 금융통계정보시스템", "unit": "억원", "Q": {"labels": ["23.1Q", "23.2Q", "23.3Q", "23.4Q", "24.1Q", "24.2Q", "24.3Q", "24.4Q", "25.1Q", "25.2Q", "25.3Q", "25.4Q"], "total_assets": [175296.1, 173838.84, 170421.48, 179976.99, 178994.38, 183511.11, 194875.27, 197526.8, 209231.75, 207967.26, 208803.7, 202790.52], "investment_assets": [164943.27, 164055.18, 161596.85, 170177.95, 169787.22, 174833.34, 185749.15, 188265.99, 199173.95, 197439.88, 198694.41, 189312.97], "nonop_assets": [10352.84, 9783.67, 8824.63, 9799.05, 9207.16, 8677.77, 9126.12, 9260.81, 10057.81, 10527.38, 10109.28, 13477.55], "total_liab": [142448.41, 139752.28, 135107.27, 145921.05, 147410.61, 153147.49, 164324.74, 166732.94, 179623.24, 177498.94, 178397.13, 175589.25], "reserve": [126255.82, 124500.35, 118437.24, 135099.86, 135920.54, 142793.72, 151261.26, 152711.62, 160870.1, 158887.33, 158964.37, 154157.41], "equity": [32847.69, 34086.57, 35314.21, 34055.94, 31583.77, 30363.62, 30550.53, 30793.86, 29608.51, 30468.32, 30406.57, 27201.26], "cap": {"cap_stock": [7736.95, 7736.95, 7736.95, 7736.95, 7736.95, 7736.95, 7736.95, 7736.95, 7736.95, 7736.95, 7736.95, 7736.95], "cap_surplus": [673.8, 673.8, 673.8, 673.8, 681.84, 689.87, 689.87, 689.87, 693.65, 704.97, 704.97, 704.97], "hybrid": [4234.92, 4234.92, 2341.05, 2341.05, 2341.05, 2341.05, 2341.05, 2341.05, 2341.05, 2341.05, 2341.05, 2341.05], "retained": [21566.28, 22325.08, 22793.3, 23127.06, 23965.23, 25227.99, 26102.19, 26416.86, 27822.59, 28593.59, 29273.95, 29906.36], "cap_adj": [-7.21, -7.21, -13.35, -13.35, -5.13, -54.55, -54.55, -54.55, -54.55, -54.55, -54.55, -3493.07], "aoci": [-1357.04, -876.97, 1782.46, 190.43, -3136.16, -5577.68, -6264.98, -6336.32, -8931.17, -8853.69, -9595.8, -9995.0]}, "asset12": [[3522.35, 4174.89, 5277.33, 3914.02, 4098.54, 5035.71, 4863.36, 5167.69, 4722.9, 5606.46, 5334.27, 5736.32], [537.88, 685.48, 663.18, 674.32, 710.49, 712.62, 766.78, 1901.37, 2212.07, 2578.01, 2614.61, 2738.4], [763.45, 804.69, 865.15, 829.7, 872.55, 891.41, 950.07, 1119.8, 1106.45, 1152.18, 1390.98, 1375.44], [55931.07, 55393.75, 55335.17, 66745.03, 66311.15, 70850.48, 78766.33, 83296.41, 90586.49, 87817.64, 89339.96, 82053.14], [48412.17, 48709.18, 46385.6, 43526.9, 44179.0, 43122.23, 44976.77, 39801.59, 43268.41, 41088.26, 40035.6, 42641.67], [13603.96, 13559.96, 13067.17, 14051.75, 13615.82, 13700.62, 13965.64, 14978.44, 15451.55, 14686.37, 15403.55, 15830.02], [4656.06, 4265.57, 3783.65, 3783.02, 4093.54, 4469.15, 4929.29, 6131.12, 6334.32, 6652.44, 6916.27, 6630.83], [2017.47, 2029.23, 2029.23, 3243.21, 3224.21, 3224.21, 3191.91, 3191.91, 3191.91, 5248.31, 5248.31, 1227.42], [32959.45, 31900.96, 31666.84, 30894.41, 30174.28, 29290.09, 29811.53, 29181.34, 28814.18, 29133.76, 28943.63, 27535.91], [2539.41, 2531.46, 2523.52, 2515.58, 2507.64, 3536.83, 3527.47, 3496.31, 3485.66, 3476.45, 3467.23, 3543.83], [82.61, 111.32, 57.57, 761.45, 391.78, 536.46, 1205.64, 1349.37, 2325.68, 1409.14, 1036.72, 317.97], [10270.23, 9672.35, 8767.06, 9037.6, 8815.38, 8141.32, 7920.48, 7911.44, 7732.12, 9118.24, 9072.56, 13159.58]], "income": {"insurance_pnl": [916.78, 1087.99, 566.71, 349.16, 1494.49, 1360.47, 881.96, 245.46, 1352.68, 942.69, 445.1, 336.67], "investment_pnl": [318.21, 257.72, 114.83, 244.6, 228.8, 283.45, 378.95, 187.23, 522.87, 235.78, 495.35, 585.07], "operating_pnl": [1234.99, 1345.71, 681.54, 593.76, 1723.29, 1643.91, 1260.91, 432.69, 1875.55, 1178.47, 940.46, 921.75], "net_income": [995.14, 1029.12, 513.03, 369.69, 1248.56, 1298.7, 910.15, 365.35, 1426.54, 799.41, 716.3, 668.35]}, "ratio": {"roa": [0.568, 0.59, 0.298, 0.211, 0.696, 0.717, 0.481, 0.186, 0.701, 0.383, 0.344, 0.325], "roe": [3.03, 3.075, 1.478, 1.066, 3.804, 4.193, 2.988, 1.191, 4.723, 2.661, 2.353, 2.32], "inv_yield": [0.193, 0.157, 0.071, 0.147, 0.135, 0.164, 0.21, 0.1, 0.27, 0.119, 0.25, 0.302]}, "bond_forward": [13885, 14505, 16034, 16584, 16701, 17073, 18751, 21429, 25387, 28753, 31454, 30813], "kgb30y": [3.374, 3.667, 3.882, 3.08, 3.31, 3.197, 2.867, 2.796, 2.575, null, null, null]}, "Y": {"labels": ["2023", "2024", "2025"], "total_assets": [179976.99, 197526.8, 202790.52], "investment_assets": [170177.95, 188265.99, 189312.97], "nonop_assets": [9799.05, 9260.81, 13477.55], "total_liab": [145921.05, 166732.94, 175589.25], "reserve": [135099.86, 152711.62, 154157.41], "equity": [34055.94, 30793.86, 27201.26], "cap": {"cap_stock": [7736.95, 7736.95, 7736.95], "cap_surplus": [673.8, 689.87, 704.97], "hybrid": [2341.05, 2341.05, 2341.05], "retained": [23127.06, 26416.86, 29906.36], "cap_adj": [-13.35, -54.55, -3493.07], "aoci": [190.43, -6336.32, -9995.0]}, "asset12": [[3914.02, 5167.69, 5736.32], [674.32, 1901.37, 2738.4], [829.7, 1119.8, 1375.44], [66745.03, 83296.41, 82053.14], [43526.9, 39801.59, 42641.67], [14051.75, 14978.44, 15830.02], [3783.02, 6131.12, 6630.83], [3243.21, 3191.91, 1227.42], [30894.41, 29181.34, 27535.91], [2515.58, 3496.31, 3543.83], [761.45, 1349.37, 317.97], [9037.6, 7911.44, 13159.58]], "income": {"insurance_pnl": [2920.64, 3982.38, 3077.14], "investment_pnl": [935.36, 1078.43, 1839.07], "operating_pnl": [3856.0, 5060.8, 4916.23], "net_income": [2906.98, 3822.76, 3610.6]}, "bond_forward": [16584, 21429, 30813], "kgb30y": [3.08, 2.796, null], "ratio": {"roa": [1.615, 1.935, 1.78], "roe": [8.536, 12.414, 13.274], "inv_yield": [0.55, 0.573, 0.971]}}};
+  const C = {
+    op:"#0B2545", nonop:"#BE9B30",
+    liab:"#B45309", reserve:"#0F766E", equity:"#13315C",
+    cap:{cap_stock:"#0B2545",cap_surplus:"#1D4ED8",hybrid:"#0891B2",retained:"#0F766E",cap_adj:"#BE9B30",aoci:"#B91C1C"},
+    capLabel:{cap_stock:"자본금",cap_surplus:"자본잉여금",hybrid:"신종자본증권",retained:"이익잉여금",cap_adj:"자본조정",aoci:"기타포괄손익누계액"},
+    a12:["#0B2545","#13315C","#1D4ED8","#3B82F6","#0F766E","#0891B2","#14B8A6","#B45309","#D97706","#BE9B30","#9333EA","#94A3B8"],
+    bf:"#13315C", kgb:"#BE9B30",
+    ins:"#0F766E", inv:"#1D4ED8", net:"#0B2545",
+    roa:"#0B2545", roe:"#BE9B30", iy:"#0F766E"
+  };
+  const CAPKEYS=["cap_stock","cap_surplus","hybrid","retained","cap_adj","aoci"];
+  let mode="Q";
+  const reg={};
+  function mk(id,cfg){ if(reg[id]){reg[id].destroy();} const el=document.getElementById(id); if(!el)return; reg[id]=new Chart(el.getContext("2d"),cfg); }
+  function f0(n){ return (n===null||n===undefined||isNaN(n))?"-":Number(n).toLocaleString("ko-KR",{maximumFractionDigits:0}); }
+  function f1(n){ return (n===null||n===undefined||isNaN(n))?"-":Number(n).toLocaleString("ko-KR",{maximumFractionDigits:1,minimumFractionDigits:1}); }
+  function fp(n,d){ d=(d===undefined)?2:d; return (n===null||n===undefined||isNaN(n))?"-":Number(n).toFixed(d)+"%"; }
+  const TT={ backgroundColor:"rgba(11,37,69,0.95)", padding:10, titleFont:{size:12}, bodyFont:{size:12} };
+  function yWon(){ return { ticks:{ callback:v=>f0(v), font:{size:11}, color:"#64748B" }, grid:{ color:"#F1F5F9" } }; }
+  function xCat(){ return { grid:{display:false}, ticks:{ font:{size:11}, color:"#1F2937" } }; }
+
+  function D(){ return HW[mode]; }
+
+  // ---------- KPI (latest quarter fixed) ----------
+  function renderKPI(){
+    const q=HW.Q, n=q.labels.length-1;
+    const row=document.getElementById("hwKpiRow"); row.innerHTML="";
+    function delta(cur,prev){ if(prev===0||prev==null)return ""; const r=(cur-prev)/Math.abs(prev)*100; const cls=r>0?"up":(r<0?"down":"flat"); const ar=r>0?"▲":(r<0?"▼":"■"); return `<span class="kpi-mom ${cls}">${ar} ${Math.abs(r).toFixed(1)}% QoQ</span>`; }
+    const yrNet=HW.Y.income.net_income, yrN=yrNet.length-1;
+    const netYoY=((yrNet[yrN]-yrNet[yrN-1])/Math.abs(yrNet[yrN-1])*100);
+    const cards=[
+      {primary:true,label:"자산총계 (25.4Q)",val:f0(q.total_assets[n]),unit:"억원",extra:delta(q.total_assets[n],q.total_assets[n-1])},
+      {label:"부채총계",val:f0(q.total_liab[n]),sub:"책임준비금 "+f0(q.reserve[n])+"억"},
+      {label:"자본총계",val:f0(q.equity[n]),extra:delta(q.equity[n],q.equity[n-1])},
+      {label:"당기순이익 (2025 누적)",val:f0(yrNet[yrN]),sub:`전년 ${f0(yrNet[yrN-1])}억`,extra:`<span class="kpi-mom ${netYoY>=0?'up':'down'}">${netYoY>=0?'▲':'▼'} ${Math.abs(netYoY).toFixed(1)}% YoY</span>`},
+      {label:"본드포워드",val:f0(q.bond_forward[n]),sub:"명목금액",extra:delta(q.bond_forward[n],q.bond_forward[n-1])},
+    ];
+    cards.forEach(c=>{
+      const d=document.createElement("div");
+      d.className="kpi-card"+(c.primary?" primary":"");
+      d.innerHTML=`<div class="kpi-label">${c.label}</div>
+        <div class="kpi-value">${c.val}${c.unit?` <span style="font-size:13px;font-weight:500;opacity:.8;">${c.unit}</span>`:""}</div>
+        ${c.sub?`<div class="kpi-sub">${c.sub}</div>`:""}
+        ${c.extra?`<div>${c.extra}</div>`:""}`;
+      row.appendChild(d);
+    });
+  }
+
+  // ---------- charts ----------
+  function chAssetComp(){
+    const d=D();
+    mk("hwAssetComp",{type:"bar",data:{labels:d.labels,datasets:[
+      {label:"운용자산",data:d.investment_assets,backgroundColor:C.op,stack:"a"},
+      {label:"비운용자산",data:d.nonop_assets,backgroundColor:C.nonop,stack:"a"},
+    ]},options:{maintainAspectRatio:false,plugins:{legend:{position:"bottom",labels:{font:{size:11},boxWidth:10}},
+      tooltip:{...TT,callbacks:{label:c=>`${c.dataset.label}: ${f0(c.parsed.y)} 억원`,
+        footer:items=>{let s=items.reduce((a,b)=>a+b.parsed.y,0);return "자산총계: "+f0(s)+" 억원";}}}},
+      scales:{x:{...xCat(),stacked:true},y:{...yWon(),stacked:true}}}});
+  }
+  function chLiabEquity(){
+    const d=D();
+    mk("hwLiabEquity",{type:"line",data:{labels:d.labels,datasets:[
+      {label:"부채총계",data:d.total_liab,borderColor:C.liab,backgroundColor:C.liab,tension:.2,pointRadius:3},
+      {label:"책임준비금",data:d.reserve,borderColor:C.reserve,backgroundColor:C.reserve,borderDash:[5,4],tension:.2,pointRadius:3},
+      {label:"자본총계",data:d.equity,borderColor:C.equity,backgroundColor:C.equity,tension:.2,pointRadius:3},
+    ]},options:{maintainAspectRatio:false,plugins:{legend:{position:"bottom",labels:{font:{size:11},boxWidth:10}},
+      tooltip:{...TT,callbacks:{label:c=>`${c.dataset.label}: ${f0(c.parsed.y)} 억원`}}},
+      scales:{x:xCat(),y:yWon()}}});
+  }
+  function chCapital(){
+    const d=D();
+    const ds=CAPKEYS.map(k=>({label:C.capLabel[k],data:d.cap[k],backgroundColor:C.cap[k],stack:"cap",type:"bar"}));
+    ds.push({label:"자본총계",data:d.equity,type:"line",borderColor:"#1F2937",backgroundColor:"#1F2937",borderWidth:2,pointRadius:3,tension:.15,order:-1});
+    mk("hwCapital",{type:"bar",data:{labels:d.labels,datasets:ds},
+      options:{maintainAspectRatio:false,plugins:{legend:{position:"bottom",labels:{font:{size:10.5},boxWidth:10}},
+      tooltip:{...TT,callbacks:{label:c=>`${c.dataset.label}: ${f0(c.parsed.y)} 억원`}}},
+      scales:{x:{...xCat(),stacked:true},y:{...yWon(),stacked:true}}}});
+  }
+  function chAsset12(){
+    const d=D();
+    const ds=HW.asset12_labels.map((lab,i)=>({label:lab,data:d.asset12[i],backgroundColor:C.a12[i],stack:"a"}));
+    mk("hwAsset12",{type:"bar",data:{labels:d.labels,datasets:ds},
+      options:{maintainAspectRatio:false,plugins:{legend:{position:"bottom",labels:{font:{size:10.5},boxWidth:10}},
+      tooltip:{...TT,callbacks:{label:c=>`${c.dataset.label}: ${f0(c.parsed.y)} 억원`,
+        footer:items=>{let s=items.reduce((a,b)=>a+b.parsed.y,0);return "자산총계: "+f0(s)+" 억원";}}}},
+      scales:{x:{...xCat(),stacked:true},y:{...yWon(),stacked:true}}}});
+  }
+  function chBond(){
+    const d=D();
+    mk("hwBond",{data:{labels:d.labels,datasets:[
+      {type:"bar",label:"본드포워드 명목금액",data:d.bond_forward,backgroundColor:C.bf,yAxisID:"y",borderRadius:3},
+      {type:"line",label:"국고채30년 금리",data:d.kgb30y,borderColor:C.kgb,backgroundColor:C.kgb,yAxisID:"y1",tension:.2,pointRadius:3,spanGaps:true,borderWidth:2.5},
+    ]},options:{maintainAspectRatio:false,plugins:{legend:{position:"bottom",labels:{font:{size:11},boxWidth:10}},
+      tooltip:{...TT,callbacks:{label:c=>c.dataset.yAxisID==="y1"?`${c.dataset.label}: ${c.parsed.y==null?"-":c.parsed.y.toFixed(3)+"%"}`:`${c.dataset.label}: ${f0(c.parsed.y)} 억원`}}},
+      scales:{x:xCat(),y:{...yWon(),position:"left",title:{display:true,text:"억원",font:{size:10},color:"#64748B"}},
+        y1:{position:"right",grid:{drawOnChartArea:false},ticks:{callback:v=>v.toFixed(1)+"%",font:{size:11},color:"#64748B"},title:{display:true,text:"국고채30년(%)",font:{size:10},color:"#64748B"}}}}});
+  }
+  function chIncome(){
+    const d=D();
+    mk("hwIncome",{data:{labels:d.labels,datasets:[
+      {type:"bar",label:"보험손익",data:d.income.insurance_pnl,backgroundColor:C.ins,stack:"op"},
+      {type:"bar",label:"투자손익",data:d.income.investment_pnl,backgroundColor:C.inv,stack:"op"},
+      {type:"line",label:"당기순이익",data:d.income.net_income,borderColor:C.net,backgroundColor:C.net,tension:.2,pointRadius:3,borderWidth:2.5},
+    ]},options:{maintainAspectRatio:false,plugins:{legend:{position:"bottom",labels:{font:{size:11},boxWidth:10}},
+      tooltip:{...TT,callbacks:{label:c=>`${c.dataset.label}: ${f0(c.parsed.y)} 억원`,
+        footer:items=>{let s=items.filter(i=>i.dataset.stack==="op").reduce((a,b)=>a+b.parsed.y,0);return items.some(i=>i.dataset.stack==="op")?"영업이익: "+f0(s)+" 억원":"";}}}},
+      scales:{x:{...xCat(),stacked:true},y:{...yWon(),stacked:true}}}});
+  }
+  function chRatio(){
+    const d=D();
+    mk("hwRatio",{type:"line",data:{labels:d.labels,datasets:[
+      {label:"ROA",data:d.ratio.roa,borderColor:C.roa,backgroundColor:C.roa,tension:.2,pointRadius:3},
+      {label:"ROE",data:d.ratio.roe,borderColor:C.roe,backgroundColor:C.roe,tension:.2,pointRadius:3},
+      {label:"투자수익률",data:d.ratio.inv_yield,borderColor:C.iy,backgroundColor:C.iy,borderDash:[5,4],tension:.2,pointRadius:3},
+    ]},options:{maintainAspectRatio:false,plugins:{legend:{position:"bottom",labels:{font:{size:11},boxWidth:10}},
+      tooltip:{...TT,callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.y==null?"-":c.parsed.y.toFixed(3)+"%"}`}}},
+      scales:{x:xCat(),y:{ticks:{callback:v=>v.toFixed(1)+"%",font:{size:11},color:"#64748B"},grid:{color:"#F1F5F9"}}}}});
+  }
+
+  // ---------- tables ----------
+  function tbl(containerId,rows,opts){
+    opts=opts||{};
+    const d=D(), L=d.labels;
+    let h='<table class="data-table"><thead><tr><th>'+(opts.head||"항목")+'</th>';
+    L.forEach(l=>h+=`<th class="num">${l}</th>`); h+='</tr></thead><tbody>';
+    rows.forEach(r=>{
+      const cls=(r.total?"hw-total":(r.sub?"hw-sub":""));
+      h+=`<tr class="${cls}"><td>${r.name}</td>`;
+      r.data.forEach(v=>{ h+=`<td class="num">${r.pct?fp(v,r.pctd||2):f1(v)}</td>`; });
+      h+='</tr>';
+    });
+    h+='</tbody></table>';
+    document.getElementById(containerId).innerHTML=h;
+  }
+  function renderFinTable(){
+    const d=D();
+    tbl("hwFinTable",[
+      {name:"자산총계",data:d.total_assets,total:true},
+      {name:"운용자산",data:d.investment_assets,sub:true},
+      {name:"비운용자산",data:d.nonop_assets,sub:true},
+      {name:"부채총계",data:d.total_liab,total:true},
+      {name:"책임준비금",data:d.reserve,sub:true},
+      {name:"자본총계",data:d.equity,total:true},
+      {name:"자본금",data:d.cap.cap_stock,sub:true},
+      {name:"자본잉여금",data:d.cap.cap_surplus,sub:true},
+      {name:"신종자본증권",data:d.cap.hybrid,sub:true},
+      {name:"이익잉여금",data:d.cap.retained,sub:true},
+      {name:"자본조정",data:d.cap.cap_adj,sub:true},
+      {name:"기타포괄손익누계액",data:d.cap.aoci,sub:true},
+    ],{head:"재무상태 항목"});
+  }
+  function renderAsset12Table(){
+    const d=D();
+    const rows=HW.asset12_labels.map((lab,i)=>({name:lab,data:d.asset12[i]}));
+    const tot=d.labels.map((_,j)=>d.asset12.reduce((s,arr)=>s+arr[j],0));
+    rows.push({name:"운용+비운용 합계",data:tot,total:true});
+    tbl("hwAsset12Table",rows,{head:"자산유형"});
+  }
+  function renderBondTable(){
+    const d=D();
+    tbl("hwBondTable",[
+      {name:"본드포워드(억원)",data:d.bond_forward},
+      {name:"국고채30년(%)",data:d.kgb30y,pct:true,pctd:3},
+    ],{head:"구분"});
+  }
+  function renderIncomeTable(){
+    const d=D();
+    tbl("hwIncomeTable",[
+      {name:"보험손익",data:d.income.insurance_pnl},
+      {name:"투자손익",data:d.income.investment_pnl},
+      {name:"영업이익",data:d.income.operating_pnl||d.labels.map((_,j)=>d.income.insurance_pnl[j]+d.income.investment_pnl[j]),total:true},
+      {name:"당기순이익",data:d.income.net_income,total:true},
+      {name:"ROA(%)",data:d.ratio.roa,pct:true,pctd:3,sub:true},
+      {name:"ROE(%)",data:d.ratio.roe,pct:true,pctd:2,sub:true},
+      {name:"투자수익률(%)",data:d.ratio.inv_yield,pct:true,pctd:3,sub:true},
+    ],{head:"손익 · 지표"});
+  }
+
+  function renderAll(){
+    renderKPI();
+    chAssetComp(); chLiabEquity(); chCapital(); renderFinTable();
+    chAsset12(); renderAsset12Table();
+    chBond(); renderBondTable();
+    chIncome(); chRatio(); renderIncomeTable();
+    const sub=document.getElementById("hwSubtitle");
+    const tag=document.getElementById("hwIncomeTag");
+    const rsub=document.getElementById("hwRatioSub");
+    if(mode==="Q"){
+      sub.textContent="개별(별도)재무제표 기준 · 단위: 억원, % · 2023.1Q ~ 2025.4Q (분기별) · 출처: FISIS, 본드포워드(사내 집계)";
+      tag.textContent="분기 실적"; rsub.textContent="ROA · ROE · 투자수익률 (분기 기준, %)";
+    } else {
+      sub.textContent="개별(별도)재무제표 기준 · 단위: 억원, % · 2023 ~ 2025 (연도별: 재무상태=기말, 손익=연간누적) · 출처: FISIS, 본드포워드(사내 집계)";
+      tag.textContent="연간 누적"; rsub.textContent="ROA · ROE · 투자수익률 (연간 기준, %)";
+    }
+  }
+
+  document.getElementById("hwModeTabs").addEventListener("click",e=>{
+    const b=e.target.closest(".view-tab"); if(!b)return;
+    document.querySelectorAll("#hwModeTabs .view-tab").forEach(x=>x.classList.remove("active"));
+    b.classList.add("active"); mode=b.dataset.mode; renderAll();
+  });
+  renderAll();
+})();
+</script>
+
 </body>
 </html>
